@@ -388,16 +388,16 @@ public class PinchImageView extends ImageView  {
         //获取第一层变换矩阵
         Matrix innerMatrix = getInnerMatrix();
         //获取第一层变换缩放比例
-        float fitScale = MathUtils.getMatrixScale(innerMatrix)[0];
+        float innerScale = MathUtils.getMatrixScale(innerMatrix)[0];
         //获取第二层变换缩放比例
-        float fitBaseScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
+        float outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
         //当前总的缩放比例
-        float currentScale = fitScale * fitBaseScale;
+        float currentScale = innerScale * outerScale;
         //控件大小
         float displayWidth = getMeasuredWidth();
         float displayHeight = getMeasuredHeight();
         //当第一层缩放比例已经大于最大等于缩放比例，将无法再放大缩小
-        if (fitScale >= mMaxScale) {
+        if (innerScale >= mMaxScale) {
             return;
         }
         //缩放动画初始矩阵为当前矩阵值
@@ -405,16 +405,16 @@ public class PinchImageView extends ImageView  {
         animStart.set(mOuterMatrix);
         //开始计算缩放动画的结果矩阵
         Matrix animEnd = new Matrix();
+        animEnd.set(mOuterMatrix);
         if (currentScale >= mMaxScale) {
-            //缩放到单位矩阵，就是居中最小的状态
-            //不做任何改变
+            animEnd.reset();
         } else {
             if (currentScale >= 1) {
                 //以双击的地方为放大点
-                animEnd.postScale(mMaxScale / fitScale, mMaxScale / fitScale, x, y);
+                animEnd.postScale(mMaxScale / currentScale, mMaxScale / currentScale, x, y);
             } else {
                 //以双击的地方为放大点
-                animEnd.postScale(1 / fitScale, 1 / fitScale, x, y);
+                animEnd.postScale(1 / currentScale, 1 / currentScale, x, y);
             }
             //将放大点移动到控件中心
             animEnd.postTranslate(displayWidth / 2 - x, displayHeight / 2 - y);
@@ -467,7 +467,7 @@ public class PinchImageView extends ImageView  {
         //整体缩放比例
         float currentScale = MathUtils.getMatrixScale(current)[0];
         //第二层缩放比例
-        float baseFitScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
+        float outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
         //控件大小
         float displayWidth = getMeasuredWidth();
         float displayHeight = getMeasuredHeight();
@@ -483,8 +483,8 @@ public class PinchImageView extends ImageView  {
             scalePost = scalePost * mMaxScale / currentScale;
         }
         //如果缩放修正后整体导致第二层缩放小于1（就是图片比inside center状态还小），重新修正缩放
-        if (baseFitScale * scalePost < 1) {
-            scalePost = scalePost * 1 / (baseFitScale * scalePost);
+        if (outerScale * scalePost < 1) {
+            scalePost = scalePost * 1 / (outerScale * scalePost);
         }
         //如果修正不为1，说明进行了修正
         if (scalePost != 1) {
