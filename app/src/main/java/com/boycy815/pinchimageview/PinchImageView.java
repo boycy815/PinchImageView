@@ -18,11 +18,14 @@ import android.widget.ImageView;
  */
 public class PinchImageView extends ImageView  {
 
-    public static final int PINCH_MODE_FREE = 0;
-    public static final int PINCH_MODE_SCROLL = 1;
-    public static final int PINCH_MODE_SCALE = 2;
+    public static final String ATTR_NAMESPACE = "http://schemas.android.com/apk/res/pinchimageview";
 
-    public static final String ATTR_NAMESPACE = "http://schemas.android.com/apk/res/gestureimageview";
+    //手势状态：自由状态
+    public static final int PINCH_MODE_FREE = 0;
+    //手势状态：单指滚动状态
+    public static final int PINCH_MODE_SCROLL = 1;
+    //手势状态：多指缩放状态
+    public static final int PINCH_MODE_SCALE = 2;
 
     //图片最大可放大为原尺寸的多少倍
     public static final String ATTR_KEY_MAX_SCALE = "max_scale";
@@ -31,7 +34,7 @@ public class PinchImageView extends ImageView  {
 
     private float mMaxScale = DEFAULT_MAX_SCALE;
 
-    //外层变换矩阵，如果是单位矩阵，那么图片是inside center状态
+    //外层变换矩阵，如果是单位矩阵，那么图片是center inside状态
     private Matrix mOuterMatrix = new Matrix();
 
     //外界点击事件
@@ -40,6 +43,7 @@ public class PinchImageView extends ImageView  {
     //外界长按事件
     private OnLongClickListener mOnLongClickListener;
 
+    //手势状态，值为PINCH_MODE_FREE，PINCH_MODE_SCROLL，PINCH_MODE_SCALE
     private int mPinchMode = PINCH_MODE_FREE;
 
     //在单指模式下是上次手指触碰的点
@@ -112,12 +116,12 @@ public class PinchImageView extends ImageView  {
     @Override
     public void setScaleType(ScaleType scaleType) {}
 
-//    //获取外部矩阵
+    //获取外部矩阵
     public Matrix getOuterMatrix() {
         return new Matrix(mOuterMatrix);
     }
 
-    //获取内部矩阵，换了图之后如果图片大小不一样，会重新计算个新的从而保证inside center状态
+    //获取内部矩阵，换了图之后如果图片大小不一样，会重新计算个新的从而保证center inside状态
     //返回的是copy值
     public Matrix getInnerMatrix() {
         Matrix result = new Matrix();
@@ -130,29 +134,30 @@ public class PinchImageView extends ImageView  {
                 float imageWidth = getDrawable().getIntrinsicWidth();
                 float imageHeight = getDrawable().getIntrinsicHeight();
                 if (imageWidth > 0 && imageHeight > 0) {
-                    float scale = 1;
-                    //如果计算inside center状态所需的scale大小
+                    float scale;
+                    //如果计算center inside状态所需的scale大小
                     if (imageWidth / imageHeight > displayWidth / displayHeight) {
                         scale = displayWidth / imageWidth;
                     } else {
                         scale = displayHeight / imageHeight;
                     }
-                    //设置inside center状态的scale和位置
-                    result.postTranslate(-imageWidth / 2f, -imageHeight / 2f);
-                    result.postScale(scale, scale);
-                    result.postTranslate(displayWidth / 2f, displayHeight / 2f);
+                    //设置center inside状态的scale和位置
+                    result.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
+                    result.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
                 }
             }
         }
         return result;
     }
 
+    //获取图片总变换矩阵
     public Matrix getCurrentImageMatrix() {
         Matrix result = getInnerMatrix();
         result.postConcat(mOuterMatrix);
         return result;
     }
 
+    //获取当前图片变换后的矩形，如果没有图片则返回null
     public RectF getImageBound() {
         if (getDrawable() == null) {
             return null;
@@ -164,6 +169,7 @@ public class PinchImageView extends ImageView  {
         }
     }
 
+    //获取当前手势状态
     public int getPinchMode() {
         return mPinchMode;
     }
@@ -367,9 +373,8 @@ public class PinchImageView extends ImageView  {
         float scale = scaleBase * distance;
         Matrix matrix = new Matrix();
         //按照图片缩放中心缩放，并且让缩放中心在缩放点中点上
-        matrix.postTranslate(-scaleCenter.x, -scaleCenter.y);
-        matrix.postScale(scale, scale);
-        matrix.postTranslate(lineCenter.x, lineCenter.y);
+        matrix.postScale(scale, scale, scaleCenter.x, scaleCenter.y);
+        matrix.postTranslate(lineCenter.x -scaleCenter.x, lineCenter.y -scaleCenter.y);
         //应用变换
         mOuterMatrix = matrix;
         //重绘
@@ -401,11 +406,9 @@ public class PinchImageView extends ImageView  {
             return;
         }
         //缩放动画初始矩阵为当前矩阵值
-        Matrix animStart = new Matrix();
-        animStart.set(mOuterMatrix);
+        Matrix animStart = new Matrix(mOuterMatrix);
         //开始计算缩放动画的结果矩阵
-        Matrix animEnd = new Matrix();
-        animEnd.set(mOuterMatrix);
+        Matrix animEnd = new Matrix(mOuterMatrix);
         if (currentScale >= mMaxScale) {
             animEnd.reset();
         } else {
@@ -419,8 +422,7 @@ public class PinchImageView extends ImageView  {
             //将放大点移动到控件中心
             animEnd.postTranslate(displayWidth / 2 - x, displayHeight / 2 - y);
             //得到放大之后的图片方框
-            Matrix current = new Matrix();
-            current.set(innerMatrix);
+            Matrix current = new Matrix(innerMatrix);
             current.postConcat(animEnd);
             RectF bound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
             current.mapRect(bound);
@@ -480,11 +482,11 @@ public class PinchImageView extends ImageView  {
         float postY = 0;
         //如果整体缩放比例大于最大比例，进行缩放修正
         if (currentScale > mMaxScale) {
-            scalePost = scalePost * mMaxScale / currentScale;
+            scalePost = mMaxScale / currentScale;
         }
-        //如果缩放修正后整体导致第二层缩放小于1（就是图片比inside center状态还小），重新修正缩放
+        //如果缩放修正后整体导致第二层缩放小于1（就是图片比center inside状态还小），重新修正缩放
         if (outerScale * scalePost < 1) {
-            scalePost = scalePost * 1 / (outerScale * scalePost);
+            scalePost = 1 / outerScale;
         }
         //如果修正不为1，说明进行了修正
         if (scalePost != 1) {
@@ -520,17 +522,12 @@ public class PinchImageView extends ImageView  {
                 mFlingAnimator.cancel();
                 mFlingAnimator = null;
             }
-            //产生修正矩阵
-            Matrix matrix = new Matrix();
-            matrix.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y);
-            matrix.postTranslate(postX, postY);
             //动画开始举证
-            Matrix animStart = new Matrix();
-            animStart.set(mOuterMatrix);
+            Matrix animStart = new Matrix(mOuterMatrix);
             //计算结束举证
-            Matrix animEnd = new Matrix();
-            animEnd.set(mOuterMatrix);
-            animEnd.postConcat(matrix);
+            Matrix animEnd = new Matrix(mOuterMatrix);
+            animEnd.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y);
+            animEnd.postTranslate(postX, postY);
             //启动矩阵动画
             mScaleAnimator = new ScaleAnimator(animStart, animEnd);
             mScaleAnimator.start();

@@ -1790,17 +1790,21 @@ public class PhotoViewPager extends ViewGroup {
                 return true;
             }
             RectF bound = mMainPinchImageView.getImageBound();
-            if (dx < 0) {
-                if (bound.right <= mMainPinchImageView.getMeasuredWidth()) {
-                    return false;
+            if (bound != null) {
+                if (dx < 0) {
+                    if (bound.right <= mMainPinchImageView.getMeasuredWidth()) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else if (dx > 0) {
+                    if (bound.left >= 0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 } else {
-                    return true;
-                }
-            } else if (dx > 0) {
-                if (bound.left >= 0) {
                     return false;
-                } else {
-                    return true;
                 }
             } else {
                 return false;
