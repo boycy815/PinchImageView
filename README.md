@@ -4,20 +4,20 @@
 
 #### double click
 
-![doubleclick](gif/doubleclick.gif =100)
+<img src="gif/doubleclick.gif" width="100" />
 
 #### zoom in
 
-![zoomin](gif/zoomin.gif =100)
+<img src="gif/zoomin.gif" width="100" />
 
 #### zoom out
 
-![zoomout](gif/zoomout.gif =100)
+<img src="gif/zoomout.gif" width="100" />
 
 #### fling
 
-![fling](gif/fling.gif =100)
+<img src="gif/fling.gif" width="100" />
 
 #### pager
 
-![pager](gif/pager.gif =100)
+<img src="gif/pager.gif" width="100" />
