@@ -22,6 +22,7 @@ import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -1785,7 +1786,25 @@ public class PhotoViewPager extends ViewGroup {
 
     private boolean isDisallowDrag(float dx) {
         if (mMainPinchImageView != null) {
-            return (dx < 0 && !mMainPinchImageView.canParentDragLeft()) || (dx > 0 && !mMainPinchImageView.canParentDragRight());
+            if (mMainPinchImageView.getPinchMode() == PinchImageView.PINCH_MODE_SCALE) {
+                return true;
+            }
+            RectF bound = mMainPinchImageView.getImageBound();
+            if (dx < 0) {
+                if (bound.right <= mMainPinchImageView.getMeasuredWidth()) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else if (dx > 0) {
+                if (bound.left >= 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
