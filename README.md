@@ -1,23 +1,34 @@
 # PinchImageView
 
-### Example
+## 功能
 
-#### double click
+1. 双击放大，双击缩小
+2. 手势放大，手势缩小，图片更加跟手，超出边界会回弹
+3. 滑动惯性
+4. 不同分辨率图片无缝切换
+5. 只有一个类，使用简单，可与ImageView替换
+6. 易于与ViewPager结合（ViewPager需要做少量改动）
+
+## 演示
+
+### 双击放大缩小
 
 <img src="gif/doubleclick.gif" width="200" />
 
-#### zoom in
+### 手势放大
 
 <img src="gif/zoomin.gif" width="200" />
 
-#### zoom out
+### 手势缩小
 
 <img src="gif/zoomout.gif" width="200" />
 
-#### fling
+### 滑动惯性
 
 <img src="gif/fling.gif" width="200" />
 
-#### pager
+### 与ViewPager结合
 
 <img src="gif/pager.gif" width="200" />
+
+[点击下载example.apk](apk/example.apk)
