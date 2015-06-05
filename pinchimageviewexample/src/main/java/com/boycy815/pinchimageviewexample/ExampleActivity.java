@@ -49,7 +49,7 @@ public class ExampleActivity extends Activity {
 
         final LinkedList<PinchImageView> viewCache = new LinkedList<PinchImageView>();
 
-        final PhotoViewPager pager = (PhotoViewPager) findViewById(R.id.pager);
+        final PinchImageViewPager pager = (PinchImageViewPager) findViewById(R.id.pager);
         pager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {

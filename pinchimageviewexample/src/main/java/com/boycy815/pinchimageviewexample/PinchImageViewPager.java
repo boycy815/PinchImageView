@@ -95,7 +95,7 @@ import java.util.Comparator;
  * {@sample development/samples/Support13Demos/src/com/example/android/supportv13/app/ActionBarTabsPager.java
  *      complete}
  */
-public class PhotoViewPager extends ViewGroup {
+public class PinchImageViewPager extends ViewGroup {
     private static final String TAG = "ViewPager";
     private static final boolean DEBUG = false;
 
@@ -291,9 +291,9 @@ public class PhotoViewPager extends ViewGroup {
          * or when it is fully stopped/idle.
          *
          * @param state The new scroll state.
-         * @see PhotoViewPager#SCROLL_STATE_IDLE
-         * @see PhotoViewPager#SCROLL_STATE_DRAGGING
-         * @see PhotoViewPager#SCROLL_STATE_SETTLING
+         * @see PinchImageViewPager#SCROLL_STATE_IDLE
+         * @see PinchImageViewPager#SCROLL_STATE_DRAGGING
+         * @see PinchImageViewPager#SCROLL_STATE_SETTLING
          */
         public void onPageScrollStateChanged(int state);
     }
@@ -354,12 +354,12 @@ public class PhotoViewPager extends ViewGroup {
      */
     interface Decor {}
 
-    public PhotoViewPager(Context context) {
+    public PinchImageViewPager(Context context) {
         super(context);
         initViewPager();
     }
 
-    public PhotoViewPager(Context context, AttributeSet attrs) {
+    public PinchImageViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
         initViewPager();
     }
@@ -2813,7 +2813,7 @@ public class PhotoViewPager extends ViewGroup {
         @Override
         public void onInitializeAccessibilityEvent(View host, AccessibilityEvent event) {
             super.onInitializeAccessibilityEvent(host, event);
-            event.setClassName(PhotoViewPager.class.getName());
+            event.setClassName(PinchImageViewPager.class.getName());
             final AccessibilityRecordCompat recordCompat = AccessibilityRecordCompat.obtain();
             recordCompat.setScrollable(canScroll());
             if (event.getEventType() == AccessibilityEventCompat.TYPE_VIEW_SCROLLED
@@ -2827,7 +2827,7 @@ public class PhotoViewPager extends ViewGroup {
         @Override
         public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfoCompat info) {
             super.onInitializeAccessibilityNodeInfo(host, info);
-            info.setClassName(PhotoViewPager.class.getName());
+            info.setClassName(PinchImageViewPager.class.getName());
             info.setScrollable(canScroll());
             if (canScrollHorizontally(1)) {
                 info.addAction(AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD);
