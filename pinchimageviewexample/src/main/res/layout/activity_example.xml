@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.boycy815.pinchimageview.example.PhotoViewPager
+    <com.boycy815.pinchimageviewexample.PhotoViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></com.boycy815.pinchimageview.example.PhotoViewPager>
+        android:layout_height="match_parent"></com.boycy815.pinchimageviewexample.PhotoViewPager>
 </RelativeLayout>

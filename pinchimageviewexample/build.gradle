@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "com.boycy815.pinchimageview"
+        applicationId "com.boycy815.pinchimageviewexample"
         minSdkVersion 14
         targetSdkVersion 21
         versionCode 1
@@ -22,5 +22,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:21.0.3'
-    compile files('libs/universal-image-loader-1.9.4.jar')
+    compile project(':pinchimageview')
 }

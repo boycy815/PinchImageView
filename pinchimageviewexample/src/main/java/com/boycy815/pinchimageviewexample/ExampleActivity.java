@@ -1,4 +1,4 @@
-package com.boycy815.pinchimageview.example;
+package com.boycy815.pinchimageviewexample;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.boycy815.pinchimageview.PinchImageView;
-import com.boycy815.pinchimageview.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
