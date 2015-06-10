@@ -47,7 +47,7 @@ public class PinchImageView extends ImageView  {
 
 
 
-    //外层变换矩阵，如果是单位矩阵，那么图片是center inside状态
+    //外层变换矩阵，如果是单位矩阵，那么图片是fit center状态
     private Matrix mOuterMatrix = new Matrix();
 
     //手势状态，值为PINCH_MODE_FREE，PINCH_MODE_SCROLL，PINCH_MODE_SCALE
@@ -129,7 +129,7 @@ public class PinchImageView extends ImageView  {
         return new Matrix(mOuterMatrix);
     }
 
-    //获取内部矩阵，换了图之后如果图片大小不一样，会重新计算个新的从而保证center inside状态
+    //获取内部矩阵，换了图之后如果图片大小不一样，会重新计算个新的从而保证fit center状态
     //返回的是copy值
     public Matrix getInnerMatrix() {
         Matrix result = new Matrix();
@@ -143,13 +143,13 @@ public class PinchImageView extends ImageView  {
                 float imageHeight = getDrawable().getIntrinsicHeight();
                 if (imageWidth > 0 && imageHeight > 0) {
                     float scale;
-                    //如果计算center inside状态所需的scale大小
+                    //如果计算fit center状态所需的scale大小
                     if (imageWidth / imageHeight > displayWidth / displayHeight) {
                         scale = displayWidth / imageWidth;
                     } else {
                         scale = displayHeight / imageHeight;
                     }
-                    //设置center inside状态的scale和位置
+                    //设置fit center状态的scale和位置
                     result.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
                     result.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
                 }
@@ -182,7 +182,7 @@ public class PinchImageView extends ImageView  {
         return mPinchMode;
     }
 
-    //停止所有动画，重置位置到center inside状态
+    //停止所有动画，重置位置到fit center状态
     public void reset() {
         mOuterMatrix = new Matrix();
         onOuterMatrixChanged();
@@ -208,7 +208,7 @@ public class PinchImageView extends ImageView  {
         return MAX_SCALE;
     }
 
-    //计算双击之后图片应该被缩放的比例，如果值大于getMaxScale或者小于center inside尺寸，则取边界值
+    //计算双击之后图片应该被缩放的比例，如果值大于getMaxScale或者小于fit center尺寸，则取边界值
     protected float calculateNextScale(float innerScale, float outerScale) {
         float currentScale = innerScale * outerScale;
         if (currentScale < MAX_SCALE) {
@@ -438,7 +438,7 @@ public class PinchImageView extends ImageView  {
         float maxScale = getMaxScale();
         //接下来要放大的大小
         float nextScale = calculateNextScale(innerScale, outerScale);
-        //如果接下来放大大于最大值或者小于center inside值，则取边界
+        //如果接下来放大大于最大值或者小于fit center值，则取边界
         if (nextScale < innerScale) {
             nextScale = innerScale;
         } else if (nextScale > maxScale) {
@@ -513,7 +513,7 @@ public class PinchImageView extends ImageView  {
         if (currentScale > maxScale) {
             scalePost = maxScale / currentScale;
         }
-        //如果缩放修正后整体导致第二层缩放小于1（就是图片比center inside状态还小），重新修正缩放
+        //如果缩放修正后整体导致第二层缩放小于1（就是图片比fit center状态还小），重新修正缩放
         if (outerScale * scalePost < 1) {
             scalePost = 1 / outerScale;
         }
