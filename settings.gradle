@@ -1,1 +1,1 @@
-include ':pinchimageviewexample', ':pinchimageview'
+include ':pinchimageviewexample', ':pinchimageview', ':switcherimageviewsample'
