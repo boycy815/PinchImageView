@@ -37,9 +37,6 @@ public class PinchImageView extends ImageView  {
     //手势状态：多指缩放状态
     public static final int PINCH_MODE_SCALE = 2;
 
-    //手势状态：禁止手势
-    public static final int PINCH_MODE_NO_PINCH = 3;
-
 
 
     //外界点击事件
@@ -185,36 +182,6 @@ public class PinchImageView extends ImageView  {
         return mPinchMode;
     }
 
-    //开始手势禁止模式
-    public void startNoPinch() {
-        mPinchMode = PINCH_MODE_NO_PINCH;
-        mLastMovePoint = new PointF();
-        mScaleCenter = new PointF();
-        mScaleBase = 0;
-    }
-
-    public boolean animFromTo(Matrix matrixFrom, Matrix matrixTo) {
-        if (getDrawable() == null) {
-            return false;
-        }
-        if (mScaleAnimator != null) {
-            mScaleAnimator.cancel();
-            mScaleAnimator = null;
-        }
-        if (mFlingAnimator != null) {
-            mFlingAnimator.cancel();
-            mFlingAnimator = null;
-        }
-        mScaleAnimator = new ScaleAnimator(matrixFrom, matrixTo);
-        mScaleAnimator.start();
-        return true;
-    }
-
-    //停止手势禁止
-    public void endNoPinch() {
-        mPinchMode = PINCH_MODE_FREE;
-    }
-
     //停止所有动画，重置位置到fit center状态
     public void reset() {
         mOuterMatrix = new Matrix();
@@ -287,9 +254,6 @@ public class PinchImageView extends ImageView  {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        if (mPinchMode == PINCH_MODE_NO_PINCH) {
-            return true;
-        }
         //无论如何都处理各种外部手势
         mGestureDetector.onTouchEvent(event);
         int action = event.getAction() & MotionEvent.ACTION_MASK;
