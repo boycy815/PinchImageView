@@ -137,6 +137,28 @@ public class PinchImageView extends ImageView  {
 
     ////////////////////////////////公共状态设置////////////////////////////////
 
+    public void setOuterMatrix(Matrix matrix) {
+        if (matrix != null){
+            mOuterMatrix.set(matrix);
+        } else {
+            mOuterMatrix = new Matrix();
+        }
+        onOuterMatrixChanged();
+        mPinchMode = PINCH_MODE_FREE;
+        mLastMovePoint = new PointF();
+        mScaleCenter = new PointF();
+        mScaleBase = 0;
+        if (mScaleAnimator != null) {
+            mScaleAnimator.cancel();
+            mScaleAnimator = null;
+        }
+        if (mFlingAnimator != null) {
+            mFlingAnimator.cancel();
+            mFlingAnimator = null;
+        }
+        invalidate();
+    }
+
     //设置遮罩
     public void setMask(RectF mask) {
         mMask = mask;
