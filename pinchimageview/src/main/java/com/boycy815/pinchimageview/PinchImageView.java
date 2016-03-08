@@ -65,6 +65,9 @@ public class PinchImageView extends ImageView  {
     //外层变换矩阵，如果是单位矩阵，那么图片是fit center状态
     private Matrix mOuterMatrix = new Matrix();
 
+    //矩形遮罩
+    private RectF mMask;
+
     //手势状态，值为PINCH_MODE_FREE，PINCH_MODE_SCROLL，PINCH_MODE_SCALE
     private int mPinchMode = PINCH_MODE_FREE;
 
@@ -121,6 +124,11 @@ public class PinchImageView extends ImageView  {
         }
     }
 
+    //获取当前遮罩
+    public RectF getMask() {
+        return mMask;
+    }
+
     //获取当前手势状态
     public int getPinchMode() {
         return mPinchMode;
@@ -128,6 +136,12 @@ public class PinchImageView extends ImageView  {
 
 
     ////////////////////////////////公共状态设置////////////////////////////////
+
+    //设置遮罩
+    public void setMask(RectF mask) {
+        mMask = mask;
+        invalidate();
+    }
 
     //停止所有动画，重置位置到fit center状态
     public void reset() {
@@ -207,7 +221,15 @@ public class PinchImageView extends ImageView  {
         if (getDrawable() != null) {
             setImageMatrix(getCurrentImageMatrix());
         }
-        super.onDraw(canvas);
+        //对图像做遮罩处理
+        if (mMask != null) {
+            canvas.save();
+            canvas.clipRect(mMask);
+            super.onDraw(canvas);
+            canvas.restore();
+        } else {
+            super.onDraw(canvas);
+        }
     }
 
 
