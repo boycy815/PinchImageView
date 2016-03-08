@@ -17,6 +17,9 @@ import android.widget.ImageView;
  */
 public class PinchImageView extends ImageView  {
 
+
+    ////////////////////////////////配置参数////////////////////////////////
+
     //图片缩放动画时间
     public static final int SCALE_ANIMATOR_DURATION = 200;
 
@@ -27,84 +30,13 @@ public class PinchImageView extends ImageView  {
     private static final float MAX_SCALE = 4f;
 
 
-
-    //手势状态：自由状态
-    public static final int PINCH_MODE_FREE = 0;
-
-    //手势状态：单指滚动状态
-    public static final int PINCH_MODE_SCROLL = 1;
-
-    //手势状态：多指缩放状态
-    public static final int PINCH_MODE_SCALE = 2;
-
-
+    ////////////////////////////////监听器////////////////////////////////
 
     //外界点击事件
     private OnClickListener mOnClickListener;
 
     //外界长按事件
     private OnLongClickListener mOnLongClickListener;
-
-
-
-    //外层变换矩阵，如果是单位矩阵，那么图片是fit center状态
-    private Matrix mOuterMatrix = new Matrix();
-
-    //手势状态，值为PINCH_MODE_FREE，PINCH_MODE_SCROLL，PINCH_MODE_SCALE
-    private int mPinchMode = PINCH_MODE_FREE;
-
-
-
-    //在单指模式下是上次手指触碰的点
-    //在多指模式下两个缩放控制点的中点
-    private PointF mLastMovePoint = new PointF();
-
-    //缩放模式下图片的缩放中点，这个点是在原图进行内层变换后的点
-    private PointF mScaleCenter = new PointF();
-
-    //缩放模式下的缩放比例，为 外层缩放值 / 开始缩放时两指距离
-    private float mScaleBase = 0;
-
-
-
-    //矩阵动画，缩放模式把图片的位置大小超出限制之后触发；双击图片放大或缩小时触发
-    private ScaleAnimator mScaleAnimator;
-
-    //滑动产生的惯性动画
-    private FlingAnimator mFlingAnimator;
-
-
-
-    public PinchImageView(Context context) {
-        super(context);
-        initView();
-    }
-
-    public PinchImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        initView();
-    }
-
-    public PinchImageView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        initView();
-    }
-
-    private void initView() {
-        //强制设置图片scaleType为matrix
-        super.setScaleType(ScaleType.MATRIX);
-    }
-
-
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        //在绘制前设置变换矩阵
-        if (getDrawable() != null) {
-            setImageMatrix(getCurrentImageMatrix());
-        }
-        super.onDraw(canvas);
-    }
 
     @Override
     public void setOnClickListener(OnClickListener l) {
@@ -118,11 +50,23 @@ public class PinchImageView extends ImageView  {
         mOnLongClickListener = l;
     }
 
-    //不允许设置scaleType，只能用内部设置的matrix
-    @Override
-    public void setScaleType(ScaleType scaleType) {}
 
+    ////////////////////////////////公共状态获取////////////////////////////////
 
+    //手势状态：自由状态
+    public static final int PINCH_MODE_FREE = 0;
+
+    //手势状态：单指滚动状态
+    public static final int PINCH_MODE_SCROLL = 1;
+
+    //手势状态：多指缩放状态
+    public static final int PINCH_MODE_SCALE = 2;
+
+    //外层变换矩阵，如果是单位矩阵，那么图片是fit center状态
+    private Matrix mOuterMatrix = new Matrix();
+
+    //手势状态，值为PINCH_MODE_FREE，PINCH_MODE_SCROLL，PINCH_MODE_SCALE
+    private int mPinchMode = PINCH_MODE_FREE;
 
     //获取外部矩阵
     public Matrix getOuterMatrix() {
@@ -182,6 +126,9 @@ public class PinchImageView extends ImageView  {
         return mPinchMode;
     }
 
+
+    ////////////////////////////////公共状态设置////////////////////////////////
+
     //停止所有动画，重置位置到fit center状态
     public void reset() {
         mOuterMatrix = new Matrix();
@@ -202,6 +149,7 @@ public class PinchImageView extends ImageView  {
     }
 
 
+    ////////////////////////////////用于重载定制////////////////////////////////
 
     //获取图片最大可放大的比例，如果放大大于这个比例则不被允许
     protected float getMaxScale() {
@@ -224,6 +172,62 @@ public class PinchImageView extends ImageView  {
     }
 
 
+    ////////////////////////////////初始化////////////////////////////////
+
+    public PinchImageView(Context context) {
+        super(context);
+        initView();
+    }
+
+    public PinchImageView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        initView();
+    }
+
+    public PinchImageView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        initView();
+    }
+
+    private void initView() {
+        //强制设置图片scaleType为matrix
+        super.setScaleType(ScaleType.MATRIX);
+    }
+
+    //不允许设置scaleType，只能用内部设置的matrix
+    @Override
+    public void setScaleType(ScaleType scaleType) {}
+
+
+    ////////////////////////////////绘制////////////////////////////////
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        //在绘制前设置变换矩阵
+        if (getDrawable() != null) {
+            setImageMatrix(getCurrentImageMatrix());
+        }
+        super.onDraw(canvas);
+    }
+
+
+    ////////////////////////////////手势动画处理////////////////////////////////
+
+    //在单指模式下是上次手指触碰的点
+    //在多指模式下两个缩放控制点的中点
+    private PointF mLastMovePoint = new PointF();
+
+    //缩放模式下图片的缩放中点，这个点是在原图进行内层变换后的点
+    private PointF mScaleCenter = new PointF();
+
+    //缩放模式下的缩放比例，为 外层缩放值 / 开始缩放时两指距离
+    private float mScaleBase = 0;
+
+    //矩阵动画，缩放模式把图片的位置大小超出限制之后触发；双击图片放大或缩小时触发
+    private ScaleAnimator mScaleAnimator;
+
+    //滑动产生的惯性动画
+    private FlingAnimator mFlingAnimator;
 
     //点击，双击，长按，滑动等手势处理
     private GestureDetector mGestureDetector = new GestureDetector(PinchImageView.this.getContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -631,7 +635,9 @@ public class PinchImageView extends ImageView  {
         }
     }
 
-    //数学计算工具类
+
+    ////////////////////////////////数学计算工具类////////////////////////////////
+
     private static class MathUtils {
 
         //获取两点距离
