@@ -138,7 +138,7 @@ public class PinchImageView extends ImageView  {
     ////////////////////////////////公共状态设置////////////////////////////////
 
     public void setOuterMatrix(Matrix matrix) {
-        if (matrix != null){
+        if (matrix != null) {
             mOuterMatrix.set(matrix);
         } else {
             mOuterMatrix = new Matrix();
