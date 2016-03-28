@@ -292,7 +292,7 @@ public class PinchImageView extends ImageView  {
         }
 
         public boolean onDoubleTap(MotionEvent e) {
-            if (mPinchMode == PINCH_MODE_FREE && !(mScaleAnimator != null && mScaleAnimator.isRunning())) {
+            if (mPinchMode == PINCH_MODE_SCROLL && !(mScaleAnimator != null && mScaleAnimator.isRunning())) {
                 doubleTap(e.getX(), e.getY());
             }
             return true;
