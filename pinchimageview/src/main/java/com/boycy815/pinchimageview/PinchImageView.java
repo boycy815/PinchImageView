@@ -126,7 +126,11 @@ public class PinchImageView extends ImageView  {
 
     //获取当前遮罩
     public RectF getMask() {
-        return mMask;
+        if (mMask != null) {
+            return new RectF(mMask);
+        } else {
+            return null;
+        }
     }
 
     //获取当前手势状态
@@ -137,50 +141,123 @@ public class PinchImageView extends ImageView  {
 
     ////////////////////////////////公共状态设置////////////////////////////////
 
-    public void setOuterMatrix(Matrix matrix) {
-        if (matrix != null) {
-            mOuterMatrix.set(matrix);
-        } else {
-            mOuterMatrix.set(new Matrix());
+    //执行滚动动画,不会滚动到边界之外去,会导致当前所有手势和手势动画停止
+    public void scrollImageTo(float x, float y, long duration) {
+        float displayWidth = getMeasuredWidth();
+        float displayHeight = getMeasuredHeight();
+        if (displayWidth > 0 && displayHeight > 0  && getDrawable() != null) {
+            RectF bound = getImageBound();
+            if (x > 0) {
+                if (bound.left < 0) {
+                    if (bound.left + x > 0) {
+                        bound.left = 0;
+                    } else {
+                        bound.left = bound.left + x;
+                    }
+                }
+            } else if (x < 0) {
+                if (bound.right > displayWidth) {
+                    if (bound.right + x < displayWidth) {
+                        bound.right = displayWidth;
+                    } else {
+                        bound.right = bound.right + x;
+                    }
+                }
+            }
+            if (y > 0) {
+                if (bound.top < 0) {
+                    if (bound.top + y > 0) {
+                        bound.top = 0;
+                    } else {
+                        bound.top = bound.top + y;
+                    }
+                }
+            } else if (y < 0) {
+                if (bound.bottom > displayHeight) {
+                    if (bound.bottom + y < displayHeight) {
+                        bound.bottom = displayHeight;
+                    } else {
+                        bound.bottom = bound.bottom + y;
+                    }
+                }
+            }
+            zoomImageTo(bound, duration);
         }
-        onOuterMatrixChanged();
-        mPinchMode = PINCH_MODE_FREE;
-        mLastMovePoint.set(0, 0);
-        mScaleCenter.set(0, 0);
-        mScaleBase = 0;
-        if (mScaleAnimator != null) {
-            mScaleAnimator.cancel();
-            mScaleAnimator = null;
-        }
-        if (mFlingAnimator != null) {
-            mFlingAnimator.cancel();
-            mFlingAnimator = null;
-        }
-        invalidate();
     }
 
-    //设置遮罩
-    public void setMask(RectF mask) {
-        mMask = mask;
-        invalidate();
+    //执行缩放动画,会停止当前所有的手势和手势动画
+    public void zoomImageTo(RectF imageRect, long duration) {
+        float displayWidth = getMeasuredWidth();
+        float displayHeight = getMeasuredHeight();
+        if (displayWidth > 0 && displayHeight > 0  && getDrawable() != null && imageRect != null) {
+            Matrix innerMatrix = getInnerMatrix();
+            RectF bound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+            innerMatrix.mapRect(bound);
+            Matrix startMatrix = new Matrix(mOuterMatrix);
+            Matrix endMatrix = MathUtils.calculateRectTranslateMatrix(bound, imageRect);
+            mPinchMode = PINCH_MODE_FREE;
+            cancelAllAnimator();
+            if (duration <= 0) {
+                mOuterMatrix.set(endMatrix);
+                onOuterMatrixChanged();
+                invalidate();
+            } else {
+                mScaleAnimator = new ScaleAnimator(startMatrix, endMatrix, duration);
+                mScaleAnimator.start();
+            }
+        }
+    }
+
+    //执行缩放动画,会停止当前所有的手势和手势动画
+    public void outerMatrixTo(Matrix matrix, long duration) {
+        Matrix startMatrix = new Matrix(mOuterMatrix);
+        Matrix endMatrix = new Matrix(matrix);
+        mPinchMode = PINCH_MODE_FREE;
+        cancelAllAnimator();
+        if (duration <= 0) {
+            mOuterMatrix.set(endMatrix);
+            onOuterMatrixChanged();
+            invalidate();
+        } else {
+            mScaleAnimator = new ScaleAnimator(startMatrix, endMatrix, duration);
+            mScaleAnimator.start();
+        }
+    }
+
+    //执行mask动画
+    public void zoomMaskTo(RectF mask, long duration) {
+        if (mask != null) {
+            if (mMaskAnimator != null) {
+                mMaskAnimator.cancel();
+                mMaskAnimator = null;
+            }
+            if (duration <= 0 || mMask == null) {
+                if (mMask == null) {
+                    mMask = new RectF();
+                }
+                mMask.set(mask);
+                invalidate();
+            } else {
+                mMaskAnimator = new MaskAnimator(mMask, mask, duration);
+                mMaskAnimator.start();
+            }
+        }
     }
 
     //停止所有动画，重置位置到fit center状态
     public void reset() {
         mOuterMatrix.set(new Matrix());
         onOuterMatrixChanged();
+        mMask = null;
         mPinchMode = PINCH_MODE_FREE;
+        if (mMaskAnimator != null) {
+            mMaskAnimator.cancel();
+            mMaskAnimator = null;
+        }
         mLastMovePoint.set(0, 0);
         mScaleCenter.set(0, 0);
         mScaleBase = 0;
-        if (mScaleAnimator != null) {
-            mScaleAnimator.cancel();
-            mScaleAnimator = null;
-        }
-        if (mFlingAnimator != null) {
-            mFlingAnimator.cancel();
-            mFlingAnimator = null;
-        }
+        cancelAllAnimator();
         invalidate();
     }
 
@@ -251,6 +328,48 @@ public class PinchImageView extends ImageView  {
             canvas.restore();
         } else {
             super.onDraw(canvas);
+        }
+    }
+
+
+    ////////////////////////////////mask动画处理////////////////////////////////
+
+    //mask修改的动画,和图片的动画相互独立
+    private MaskAnimator mMaskAnimator;
+
+    //mask动画
+    private class MaskAnimator extends ValueAnimator implements ValueAnimator.AnimatorUpdateListener {
+
+        private float[] mStart = new float[4];
+        private float[] mEnd = new float[4];
+
+        public MaskAnimator(RectF start, RectF end, long duration) {
+            super();
+            setFloatValues(0, 1);
+            setDuration(duration);
+            addUpdateListener(this);
+            mStart[0] = start.left;
+            mStart[1] = start.top;
+            mStart[2] = start.right;
+            mStart[3] = start.bottom;
+            mEnd[0] = end.left;
+            mEnd[1] = end.top;
+            mEnd[2] = end.right;
+            mEnd[3] = end.bottom;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float value = (Float) animation.getAnimatedValue();
+            float[] result = new float[4];
+            for (int i = 0; i < 4; i++) {
+                result[i] = mStart[i] + (mEnd[i] - mStart[i]) * value;
+            }
+            if (mMask == null) {
+                mMask = new RectF();
+            }
+            mMask.set(result[0], result[1], result[2], result[3]);
+            invalidate();
         }
     }
 
@@ -687,7 +806,7 @@ public class PinchImageView extends ImageView  {
 
     ////////////////////////////////数学计算工具类////////////////////////////////
 
-    private static class MathUtils {
+    public static class MathUtils {
 
         //获取两点距离
         public static float getDistance(float x1, float y1, float x2, float y2) {
@@ -722,6 +841,115 @@ public class PinchImageView extends ImageView  {
                 return dst;
             } else {
                 return new float[2];
+            }
+        }
+
+        //计算两个矩形之间的变换矩阵
+        public static Matrix calculateRectTranslateMatrix(RectF from, RectF to) {
+            Matrix matrix = new Matrix();
+            matrix.postTranslate(-from.left, -from.top);
+            matrix.postScale(to.width() / from.width(), to.height() / from.height());
+            matrix.postTranslate(to.left, to.top);
+            return matrix;
+        }
+
+        public static RectF calculateScaledRectInContainer(RectF container, float srcWidth, float srcHeight, ScaleType scaleType) {
+            if (scaleType == ScaleType.FIT_XY) {
+                RectF result = new RectF();
+                result.set(container);
+                return result;
+            } else if (scaleType == ScaleType.CENTER) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                matrix.setTranslate((container.width() - srcWidth) * 0.5f, (container.height() - srcHeight) * 0.5f);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else if (scaleType == ScaleType.CENTER_CROP) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                float scale;
+                float dx = 0;
+                float dy = 0;
+                if (srcWidth * container.height() > container.width() * srcHeight) {
+                    scale = container.height() / srcHeight;
+                    dx = (container.width() - srcWidth * scale) * 0.5f;
+                } else {
+                    scale = container.width() / srcWidth;
+                    dy = (container.height() - srcHeight * scale) * 0.5f;
+                }
+                matrix.setScale(scale, scale);
+                matrix.postTranslate(dx, dy);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else if (scaleType == ScaleType.CENTER_INSIDE) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                float scale;
+                float dx;
+                float dy;
+                if (srcWidth <= container.width() && srcHeight <= container.height()) {
+                    scale = 1.0f;
+                } else {
+                    scale = Math.min(container.width() / srcWidth, container.height() / srcHeight);
+                }
+                dx = (container.width() - srcWidth * scale) * 0.5f;
+                dy = (container.height() - srcHeight * scale) * 0.5f;
+                matrix.setScale(scale, scale);
+                matrix.postTranslate(dx, dy);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else if (scaleType == ScaleType.FIT_CENTER) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
+                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else if (scaleType == ScaleType.FIT_START) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
+                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.START);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else if (scaleType == ScaleType.FIT_END) {
+                RectF result = new RectF();
+                Matrix matrix = new Matrix();
+                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
+                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.END);
+                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                result.left += container.left;
+                result.right += container.left;
+                result.top += container.top;
+                result.bottom += container.top;
+                return result;
+            } else {
+                RectF result = new RectF();
+                result.set(container);
+                return result;
             }
         }
     }

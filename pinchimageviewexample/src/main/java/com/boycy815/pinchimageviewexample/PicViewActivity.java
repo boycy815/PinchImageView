@@ -9,7 +9,9 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.view.SoundEffectConstants;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.boycy815.pinchimageview.PinchImageView;
 
@@ -18,11 +20,10 @@ public class PicViewActivity extends Activity {
 
     private static final long ANIM_TIME = 200;
 
-    private RectF mThumbMask;
-    private Matrix mThumbMatrix;
+    private RectF mThumbMaskRect;
+    private Matrix mThumbImageMatrix;
 
     private ObjectAnimator mBackgroundAnimator;
-    private ValueAnimator mImageAnimator;
 
     private View mBackground;
     private PinchImageView mImageView;
@@ -31,9 +32,11 @@ public class PicViewActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //获取参数
         String url = getIntent().getStringExtra("url");
         final Rect rect = getIntent().getParcelableExtra("rect");
 
+        //view初始化
         setContentView(R.layout.activity_pic_view);
         mImageView = (PinchImageView) findViewById(R.id.pic);
         mBackground = findViewById(R.id.background);
@@ -43,6 +46,9 @@ public class PicViewActivity extends Activity {
         mImageView.post(new Runnable() {
             @Override
             public void run() {
+                mImageView.setAlpha(1f);
+
+                //背景动画
                 mBackgroundAnimator = ObjectAnimator.ofFloat(mBackground, "alpha", 0f, 1f);
                 mBackgroundAnimator.setDuration(ANIM_TIME);
                 mBackgroundAnimator.start();
@@ -53,101 +59,43 @@ public class PicViewActivity extends Activity {
                 rect.top = rect.top - tempRect.top;
                 rect.bottom = rect.bottom - tempRect.top;
 
-                mThumbMask = new RectF(rect.left, rect.top, rect.right, rect.bottom);
-                final RectF bigMask = new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight());
+                //mask动画
+                mThumbMaskRect = new RectF(rect);
+                RectF bigMaskRect = new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight());
+                mImageView.zoomMaskTo(mThumbMaskRect, 0);
+                mImageView.zoomMaskTo(bigMaskRect, ANIM_TIME);
 
-                mThumbMatrix = new Matrix();
-                RectF startRect = new RectF();
-                if (((float) bitmap.getWidth()) / ((float) bitmap.getHeight()) > ((float) rect.width()) / ((float) rect.height())) {
-                    float scale = ((float) rect.width()) / ((float) bitmap.getWidth());
-                    float width = ((float) bitmap.getWidth()) * scale;
-                    float height = ((float) bitmap.getHeight()) * scale;
-                    startRect.left = rect.left;
-                    startRect.top = rect.top + (((float) rect.height()) - height) / 2f;
-                    startRect.right = startRect.left + width;
-                    startRect.bottom = startRect.top + height;
-                } else {
-                    float scale = ((float) rect.height()) / ((float) bitmap.getHeight());
-                    float width = ((float) bitmap.getWidth()) * scale;
-                    float height = ((float) bitmap.getHeight()) * scale;
-                    startRect.left = rect.left + (((float) rect.width()) - width) / 2f;
-                    startRect.top = rect.top;
-                    startRect.right = startRect.left + width;
-                    startRect.bottom = startRect.top + height;
-                }
-                RectF bigRect = mImageView.getImageBound();
-                mThumbMatrix.postTranslate(-bigRect.left, -bigRect.top);
-                float scale = startRect.width() / bigRect.width();
-                mThumbMatrix.postScale(scale, scale);
-                mThumbMatrix.postTranslate(startRect.left, startRect.top);
-                final Matrix bigMatrix = new Matrix();
 
-                mImageView.setAlpha(1f);
-                mImageAnimator = ValueAnimator.ofFloat(0, 1);
-                mImageAnimator.setDuration(ANIM_TIME);
-                mImageAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float value = (Float) animation.getAnimatedValue();
-                        float[] maskResult = interpolation(convertRectFToArray(mThumbMask), convertRectFToArray(bigMask), value);
-                        mImageView.setMask(new RectF(maskResult[0], maskResult[1], maskResult[2], maskResult[3]));
-                        Matrix matrixResult = new Matrix();
-                        matrixResult.setValues(interpolation(convertMatrixToArray(mThumbMatrix), convertMatrixToArray(bigMatrix), value));
-                        mImageView.setOuterMatrix(matrixResult);
-                    }
-                });
-                mImageAnimator.start();
+                //图片放大动画
+                RectF thumbImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(rect), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER);
+                RectF bigImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight()), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER);
+                mThumbImageMatrix = PinchImageView.MathUtils.calculateRectTranslateMatrix(bigImageMatrixRect, thumbImageMatrixRect);
+                mImageView.outerMatrixTo(mThumbImageMatrix, 0);
+                mImageView.outerMatrixTo(new Matrix(), ANIM_TIME);
             }
         });
-    }
-
-    private float[] convertRectFToArray(RectF rect) {
-        return new float[] {rect.left, rect.top, rect.right, rect.bottom};
-    }
-
-    private float[] convertMatrixToArray(Matrix matrix) {
-        float[] result = new float[9];
-        matrix.getValues(result);
-        return result;
-    }
-
-    private float[] interpolation(float[] start, float[] end, float process) {
-        int l = start.length;
-        float[] result = new float[l];
-        for (int i = 0; i < l; i++) {
-            result[i] = start[i] + (end[i] - start[i]) * process;
-        }
-        return result;
+        mImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mImageView.playSoundEffect(SoundEffectConstants.CLICK);
+                finish();
+            }
+        });
     }
 
     @Override
     public void finish() {
-        if ((mBackgroundAnimator != null && mBackgroundAnimator.isRunning()) || (mImageAnimator != null && mImageAnimator.isRunning())) {
+        if ((mBackgroundAnimator != null && mBackgroundAnimator.isRunning())) {
             return;
         }
 
+        //背景动画
         mBackgroundAnimator = ObjectAnimator.ofFloat(mBackground, "alpha", mBackground.getAlpha(), 0f);
         mBackgroundAnimator.setDuration(ANIM_TIME);
-        mBackgroundAnimator.start();
-
-        mImageAnimator = ValueAnimator.ofFloat(0, 1);
-        mImageAnimator.setDuration(ANIM_TIME);
-        final RectF bigMask = mImageView.getImageBound();
-        final Matrix bigMatrix = mImageView.getOuterMatrix();
-        mImageAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (Float) animation.getAnimatedValue();
-                float[] maskResult = interpolation(convertRectFToArray(bigMask), convertRectFToArray(mThumbMask), value);
-                mImageView.setMask(new RectF(maskResult[0], maskResult[1], maskResult[2], maskResult[3]));
-                Matrix matrixResult = new Matrix();
-                matrixResult.setValues(interpolation(convertMatrixToArray(bigMatrix), convertMatrixToArray(mThumbMatrix), value));
-                mImageView.setOuterMatrix(matrixResult);
-            }
-        });
-        mImageAnimator.addListener(new Animator.AnimatorListener() {
+        mBackgroundAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
+
             }
 
             @Override
@@ -158,12 +106,20 @@ public class PicViewActivity extends Activity {
 
             @Override
             public void onAnimationCancel(Animator animation) {
+
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
+
             }
         });
-        mImageAnimator.start();
+        mBackgroundAnimator.start();
+
+        //mask动画
+        mImageView.zoomImageTo(mThumbMaskRect, ANIM_TIME);
+
+        //图片缩小动画
+        mImageView.outerMatrixTo(mThumbImageMatrix, ANIM_TIME);
     }
 }
