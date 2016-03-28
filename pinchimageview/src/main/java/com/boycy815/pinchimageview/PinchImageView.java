@@ -141,12 +141,12 @@ public class PinchImageView extends ImageView  {
         if (matrix != null) {
             mOuterMatrix.set(matrix);
         } else {
-            mOuterMatrix = new Matrix();
+            mOuterMatrix.set(new Matrix());
         }
         onOuterMatrixChanged();
         mPinchMode = PINCH_MODE_FREE;
-        mLastMovePoint = new PointF();
-        mScaleCenter = new PointF();
+        mLastMovePoint.set(0, 0);
+        mScaleCenter.set(0, 0);
         mScaleBase = 0;
         if (mScaleAnimator != null) {
             mScaleAnimator.cancel();
@@ -167,11 +167,11 @@ public class PinchImageView extends ImageView  {
 
     //停止所有动画，重置位置到fit center状态
     public void reset() {
-        mOuterMatrix = new Matrix();
+        mOuterMatrix.set(new Matrix());
         onOuterMatrixChanged();
         mPinchMode = PINCH_MODE_FREE;
-        mLastMovePoint = new PointF();
-        mScaleCenter = new PointF();
+        mLastMovePoint.set(0, 0);
+        mScaleCenter.set(0, 0);
         mScaleBase = 0;
         if (mScaleAnimator != null) {
             mScaleAnimator.cancel();
@@ -273,10 +273,15 @@ public class PinchImageView extends ImageView  {
     //滑动产生的惯性动画
     private FlingAnimator mFlingAnimator;
 
+    //程序触发的滚动动画
+    private ScaleAnimator mScrollAnimator;
+
     //点击，双击，长按，滑动等手势处理
     private GestureDetector mGestureDetector = new GestureDetector(PinchImageView.this.getContext(), new GestureDetector.SimpleOnGestureListener() {
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            fling(velocityX, velocityY);
+            if (mPinchMode == PINCH_MODE_FREE && !(mScaleAnimator != null && mScaleAnimator.isRunning())) {
+                fling(velocityX, velocityY);
+            }
             return true;
         }
 
@@ -287,7 +292,9 @@ public class PinchImageView extends ImageView  {
         }
 
         public boolean onDoubleTap(MotionEvent e) {
-            doubleTap(e.getX(), e.getY());
+            if (mPinchMode == PINCH_MODE_FREE && !(mScaleAnimator != null && mScaleAnimator.isRunning())) {
+                doubleTap(e.getX(), e.getY());
+            }
             return true;
         }
 
@@ -302,8 +309,6 @@ public class PinchImageView extends ImageView  {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        //无论如何都处理各种外部手势
-        mGestureDetector.onTouchEvent(event);
         int action = event.getAction() & MotionEvent.ACTION_MASK;
         //最后一个点抬起或者取消，结束所有模式
         if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
@@ -328,26 +333,15 @@ public class PinchImageView extends ImageView  {
         } else if (action == MotionEvent.ACTION_DOWN) {
             //在矩阵动画过程中不允许启动滚动模式
             if (!(mScaleAnimator != null && mScaleAnimator.isRunning())) {
-                //停止惯性滚动
-                if (mFlingAnimator != null) {
-                    mFlingAnimator.cancel();
-                    mFlingAnimator = null;
-                }
+                //停止所有动画
+                cancelAllAnimator();
                 mPinchMode = PINCH_MODE_SCROLL;
                 mLastMovePoint.set(event.getX(), event.getY());
             }
             //非第一个点按下，关闭滚动模式，开启缩放模式，记录缩放模式的一些初始数据
         } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
-            //停止惯性滚动
-            if (mFlingAnimator != null) {
-                mFlingAnimator.cancel();
-                mFlingAnimator = null;
-            }
-            //停止矩阵动画
-            if (mScaleAnimator != null) {
-                mScaleAnimator.cancel();
-                mScaleAnimator = null;
-            }
+            //停止所有动画
+            cancelAllAnimator();
             mPinchMode = PINCH_MODE_SCALE;
             saveScaleContext(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
         } else if (action == MotionEvent.ACTION_MOVE) {
@@ -370,6 +364,8 @@ public class PinchImageView extends ImageView  {
                 }
             }
         }
+        //无论如何都处理各种外部手势
+        mGestureDetector.onTouchEvent(event);
         return true;
     }
 
@@ -460,7 +456,7 @@ public class PinchImageView extends ImageView  {
         matrix.postScale(scale, scale, scaleCenter.x, scaleCenter.y);
         matrix.postTranslate(lineCenter.x - scaleCenter.x, lineCenter.y - scaleCenter.y);
         //应用变换
-        mOuterMatrix = matrix;
+        mOuterMatrix.set(matrix);
         onOuterMatrixChanged();
         //重绘
         invalidate();
@@ -471,8 +467,7 @@ public class PinchImageView extends ImageView  {
     //当当前缩放比例小于1，双击放大到1
     //当当前缩放比例等于MaxScale，双击缩小到屏幕大小
     private void doubleTap(float x, float y) {
-        //不允许动画过程中再触发
-        if ((mScaleAnimator != null && mScaleAnimator.isRunning()) || getDrawable() == null) {
+        if (getDrawable() == null) {
             return;
         }
         //获取第一层变换矩阵
@@ -526,11 +521,8 @@ public class PinchImageView extends ImageView  {
         }
         //应用修正位置
         animEnd.postTranslate(postX, postY);
-        //如果正在执行惯性动画，则取消掉
-        if (mFlingAnimator != null) {
-            mFlingAnimator.cancel();
-            mFlingAnimator = null;
-        }
+        //清理当前可能正在执行的动画
+        cancelAllAnimator();
         //启动矩阵动画
         mScaleAnimator = new ScaleAnimator(animStart, animEnd);
         mScaleAnimator.start();
@@ -538,8 +530,7 @@ public class PinchImageView extends ImageView  {
 
     //当缩放操作结束如果不在正确位置用动画恢复
     private void scaleEnd() {
-        //不允许动画过程中再触发
-        if ((mScaleAnimator != null && mScaleAnimator.isRunning()) || getDrawable() == null) {
+        if (getDrawable() == null) {
             return;
         }
         //是否修正了位置
@@ -598,17 +589,14 @@ public class PinchImageView extends ImageView  {
         }
         //只有有执行修正才执行动画
         if (change) {
-            //如果up的时候触发惯性，这里需要取消掉，以修正动画为主
-            if (mFlingAnimator != null) {
-                mFlingAnimator.cancel();
-                mFlingAnimator = null;
-            }
-            //动画开始举证
+            //动画开始矩阵
             Matrix animStart = new Matrix(mOuterMatrix);
-            //计算结束举证
+            //计算结束矩阵
             Matrix animEnd = new Matrix(mOuterMatrix);
             animEnd.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y);
             animEnd.postTranslate(postX, postY);
+            //清理当前可能正在执行的动画
+            cancelAllAnimator();
             //启动矩阵动画
             mScaleAnimator = new ScaleAnimator(animStart, animEnd);
             mScaleAnimator.start();
@@ -616,14 +604,27 @@ public class PinchImageView extends ImageView  {
     }
 
     private void fling(float vx, float vy) {
-        //以修正动画为大，遇到修正动画正在执行，就不执行惯性动画
-        if (!(mScaleAnimator != null && mScaleAnimator.isRunning()) && getDrawable() != null) {
-            if (mFlingAnimator != null) {
-                mFlingAnimator.cancel();
-                mFlingAnimator = null;
-            }
-            mFlingAnimator = new FlingAnimator(new float[]{vx / 1000 * 16, vy / 1000 * 16});
-            mFlingAnimator.start();
+        if (getDrawable() == null) {
+            return;
+        }
+        //清理当前可能正在执行的动画
+        cancelAllAnimator();
+        mFlingAnimator = new FlingAnimator(new float[]{vx / 1000 * 16, vy / 1000 * 16});
+        mFlingAnimator.start();
+    }
+
+    private void cancelAllAnimator() {
+        if (mScaleAnimator != null) {
+            mScaleAnimator.cancel();
+            mScaleAnimator = null;
+        }
+        if (mFlingAnimator != null) {
+            mFlingAnimator.cancel();
+            mFlingAnimator = null;
+        }
+        if (mScrollAnimator != null) {
+            mScrollAnimator.cancel();
+            mScrollAnimator = null;
         }
     }
 
@@ -658,9 +659,13 @@ public class PinchImageView extends ImageView  {
         private float[] mEnd = new float[9];
 
         public ScaleAnimator(Matrix start, Matrix end) {
+            this(start, end, SCALE_ANIMATOR_DURATION);
+        }
+
+        public ScaleAnimator(Matrix start, Matrix end, long duration) {
             super();
             setFloatValues(0, 1);
-            setDuration(SCALE_ANIMATOR_DURATION);
+            setDuration(duration);
             addUpdateListener(this);
             start.getValues(mStart);
             end.getValues(mEnd);
