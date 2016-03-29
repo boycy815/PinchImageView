@@ -37,7 +37,7 @@ public class ThumbViewActivity extends Activity {
                 @Override
                 public void onLoadingComplete(String s, View view, Bitmap bitmap) {
                     Global.setCacheBitmap(Global.images[fi], bitmap);
-                    final ImageView thumb = (ImageView) root.getChildAt(fi);
+                    final ImageView thumb = (ImageView) ((ViewGroup) root.getChildAt(fi)).getChildAt(0);
                     thumb.setImageBitmap(bitmap);
                     thumb.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -47,6 +47,7 @@ public class ThumbViewActivity extends Activity {
                             Rect rect = new Rect();
                             thumb.getGlobalVisibleRect(rect);
                             intent.putExtra("rect", rect);
+                            intent.putExtra("scaleType", thumb.getScaleType());
                             startActivity(intent);
                         }
                     });

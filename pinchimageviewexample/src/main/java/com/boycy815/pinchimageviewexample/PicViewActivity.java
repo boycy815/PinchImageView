@@ -18,7 +18,7 @@ import com.boycy815.pinchimageview.PinchImageView;
 
 public class PicViewActivity extends Activity {
 
-    private static final long ANIM_TIME = 200;
+    private static final long ANIM_TIME = 500;
 
     private RectF mThumbMaskRect;
     private Matrix mThumbImageMatrix;
@@ -35,6 +35,7 @@ public class PicViewActivity extends Activity {
         //获取参数
         String url = getIntent().getStringExtra("url");
         final Rect rect = getIntent().getParcelableExtra("rect");
+        final ImageView.ScaleType scaleType = (ImageView.ScaleType) getIntent().getSerializableExtra("scaleType");
 
         //view初始化
         setContentView(R.layout.activity_pic_view);
@@ -67,7 +68,7 @@ public class PicViewActivity extends Activity {
 
 
                 //图片放大动画
-                RectF thumbImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(rect), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER);
+                RectF thumbImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(rect), bitmap.getWidth(), bitmap.getHeight(), scaleType);
                 RectF bigImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight()), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER);
                 mThumbImageMatrix = PinchImageView.MathUtils.calculateRectTranslateMatrix(bigImageMatrixRect, thumbImageMatrixRect);
                 mImageView.outerMatrixTo(mThumbImageMatrix, 0);
@@ -117,7 +118,7 @@ public class PicViewActivity extends Activity {
         mBackgroundAnimator.start();
 
         //mask动画
-        mImageView.zoomImageTo(mThumbMaskRect, ANIM_TIME);
+        mImageView.zoomMaskTo(mThumbMaskRect, ANIM_TIME);
 
         //图片缩小动画
         mImageView.outerMatrixTo(mThumbImageMatrix, ANIM_TIME);

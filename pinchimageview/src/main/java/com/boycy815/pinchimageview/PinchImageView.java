@@ -854,11 +854,11 @@ public class PinchImageView extends ImageView  {
         }
 
         public static RectF calculateScaledRectInContainer(RectF container, float srcWidth, float srcHeight, ScaleType scaleType) {
-            if (scaleType == ScaleType.FIT_XY) {
+            if (ScaleType.FIT_XY.equals(scaleType)) {
                 RectF result = new RectF();
                 result.set(container);
                 return result;
-            } else if (scaleType == ScaleType.CENTER) {
+            } else if (ScaleType.CENTER.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 matrix.setTranslate((container.width() - srcWidth) * 0.5f, (container.height() - srcHeight) * 0.5f);
@@ -868,7 +868,7 @@ public class PinchImageView extends ImageView  {
                 result.top += container.top;
                 result.bottom += container.top;
                 return result;
-            } else if (scaleType == ScaleType.CENTER_CROP) {
+            } else if (ScaleType.CENTER_CROP.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 float scale;
@@ -889,7 +889,7 @@ public class PinchImageView extends ImageView  {
                 result.top += container.top;
                 result.bottom += container.top;
                 return result;
-            } else if (scaleType == ScaleType.CENTER_INSIDE) {
+            } else if (ScaleType.CENTER_INSIDE.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 float scale;
@@ -910,7 +910,7 @@ public class PinchImageView extends ImageView  {
                 result.top += container.top;
                 result.bottom += container.top;
                 return result;
-            } else if (scaleType == ScaleType.FIT_CENTER) {
+            } else if (ScaleType.FIT_CENTER.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
@@ -922,7 +922,7 @@ public class PinchImageView extends ImageView  {
                 result.top += container.top;
                 result.bottom += container.top;
                 return result;
-            } else if (scaleType == ScaleType.FIT_START) {
+            } else if (ScaleType.FIT_START.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
@@ -934,7 +934,7 @@ public class PinchImageView extends ImageView  {
                 result.top += container.top;
                 result.bottom += container.top;
                 return result;
-            } else if (scaleType == ScaleType.FIT_END) {
+            } else if (ScaleType.FIT_END.equals(scaleType)) {
                 RectF result = new RectF();
                 Matrix matrix = new Matrix();
                 RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
