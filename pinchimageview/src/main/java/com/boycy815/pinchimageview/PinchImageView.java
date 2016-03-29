@@ -192,7 +192,9 @@ public class PinchImageView extends ImageView  {
     public void zoomImageTo(RectF imageRect, long duration) {
         float displayWidth = getMeasuredWidth();
         float displayHeight = getMeasuredHeight();
-        if (displayWidth > 0 && displayHeight > 0  && getDrawable() != null && imageRect != null) {
+        if (displayWidth > 0 && displayHeight > 0
+                && getDrawable() != null && getDrawable().getIntrinsicWidth() > 0 && getDrawable().getIntrinsicHeight() > 0
+                && imageRect != null) {
             Matrix innerMatrix = getInnerMatrix();
             RectF bound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
             innerMatrix.mapRect(bound);
