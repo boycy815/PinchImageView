@@ -11,6 +11,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 手势图片控件
  * @author clifford
@@ -199,7 +202,7 @@ public class PinchImageView extends ImageView  {
             cancelAllAnimator();
             if (duration <= 0) {
                 mOuterMatrix.set(endMatrix);
-                onOuterMatrixChanged();
+                dispatchOuterMatrixChanged();
                 invalidate();
             } else {
                 mScaleAnimator = new ScaleAnimator(startMatrix, endMatrix, duration);
@@ -216,7 +219,7 @@ public class PinchImageView extends ImageView  {
         cancelAllAnimator();
         if (duration <= 0) {
             mOuterMatrix.set(endMatrix);
-            onOuterMatrixChanged();
+            dispatchOuterMatrixChanged();
             invalidate();
         } else {
             mScaleAnimator = new ScaleAnimator(startMatrix, endMatrix, duration);
@@ -247,7 +250,7 @@ public class PinchImageView extends ImageView  {
     //停止所有动画，重置位置到fit center状态
     public void reset() {
         mOuterMatrix.set(new Matrix());
-        onOuterMatrixChanged();
+        dispatchOuterMatrixChanged();
         mMask = null;
         mPinchMode = PINCH_MODE_FREE;
         if (mMaskAnimator != null) {
@@ -259,6 +262,77 @@ public class PinchImageView extends ImageView  {
         mScaleBase = 0;
         cancelAllAnimator();
         invalidate();
+    }
+
+
+    ////////////////////////////////对外广播事件////////////////////////////////
+
+    //事件listener
+    public interface OuterMatrixChangedListener {
+        //当图片外部矩阵发生变化就触发
+        void onOuterMatrixChanged(PinchImageView pinchImageView);
+    }
+
+    private List<OuterMatrixChangedListener> mOuterMatrixChangedListeners;
+    private List<OuterMatrixChangedListener> mOuterMatrixChangedListenersCopy;
+    private int mDispatchOuterMatrixChangedLock;
+
+    public void addOuterMatrixChangedListener(OuterMatrixChangedListener listener) {
+        if (listener == null) {
+            return;
+        }
+        if (mDispatchOuterMatrixChangedLock == 0) {
+            if (mOuterMatrixChangedListeners == null) {
+                mOuterMatrixChangedListeners = new ArrayList<OuterMatrixChangedListener>();
+            }
+            mOuterMatrixChangedListeners.add(listener);
+        } else {
+            if (mOuterMatrixChangedListenersCopy == null) {
+                if (mOuterMatrixChangedListeners != null) {
+                    mOuterMatrixChangedListenersCopy = new ArrayList<OuterMatrixChangedListener>(mOuterMatrixChangedListeners);
+                } else {
+                    mOuterMatrixChangedListenersCopy = new ArrayList<OuterMatrixChangedListener>();
+                }
+            }
+            mOuterMatrixChangedListenersCopy.add(listener);
+        }
+    }
+
+    public void removeOuterMatrixChangedListener(OuterMatrixChangedListener listener) {
+        if (listener == null) {
+            return;
+        }
+        if (mDispatchOuterMatrixChangedLock == 0) {
+            if (mOuterMatrixChangedListeners != null) {
+                mOuterMatrixChangedListeners.remove(listener);
+            }
+        } else {
+            if (mOuterMatrixChangedListenersCopy == null) {
+                if (mOuterMatrixChangedListeners != null) {
+                    mOuterMatrixChangedListenersCopy = new ArrayList<OuterMatrixChangedListener>(mOuterMatrixChangedListeners);
+                }
+            }
+            if (mOuterMatrixChangedListenersCopy != null) {
+                mOuterMatrixChangedListenersCopy.remove(listener);
+            }
+        }
+    }
+
+    private void dispatchOuterMatrixChanged() {
+        if (mOuterMatrixChangedListeners == null) {
+            return;
+        }
+        mDispatchOuterMatrixChangedLock++;
+        for (OuterMatrixChangedListener listener : mOuterMatrixChangedListeners) {
+            listener.onOuterMatrixChanged(this);
+        }
+        mDispatchOuterMatrixChangedLock--;
+        if (mDispatchOuterMatrixChangedLock == 0) {
+            if (mOuterMatrixChangedListenersCopy != null) {
+                mOuterMatrixChangedListeners = mOuterMatrixChangedListenersCopy;
+                mOuterMatrixChangedListenersCopy = null;
+            }
+        }
     }
 
 
@@ -277,11 +351,6 @@ public class PinchImageView extends ImageView  {
         } else {
             return innerScale;
         }
-    }
-
-    //当外层矩阵变换时触发
-    protected void onOuterMatrixChanged() {
-        //用于超大图分片加载
     }
 
 
@@ -538,7 +607,7 @@ public class PinchImageView extends ImageView  {
         }
         //应用移动变换
         mOuterMatrix.postTranslate(xDiff, yDiff);
-        onOuterMatrixChanged();
+        dispatchOuterMatrixChanged();
         //触发重绘
         invalidate();
         //检查是否有变化
@@ -576,7 +645,7 @@ public class PinchImageView extends ImageView  {
         matrix.postTranslate(lineCenter.x - scaleCenter.x, lineCenter.y - scaleCenter.y);
         //应用变换
         mOuterMatrix.set(matrix);
-        onOuterMatrixChanged();
+        dispatchOuterMatrixChanged();
         //重绘
         invalidate();
     }
@@ -798,7 +867,7 @@ public class PinchImageView extends ImageView  {
                 result[i] = mStart[i] + (mEnd[i] - mStart[i]) * value;
             }
             mOuterMatrix.setValues(result);
-            onOuterMatrixChanged();
+            dispatchOuterMatrixChanged();
             invalidate();
         }
     }
