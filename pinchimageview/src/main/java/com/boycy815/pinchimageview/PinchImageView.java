@@ -874,6 +874,24 @@ public class PinchImageView extends ImageView  {
         }
     }
 
+    private static class PointFPool extends ObjectsPool<PointF> {
+
+        public PointFPool(int size) {
+            super(size);
+        }
+
+        @Override
+        protected PointF newInstance() {
+            return new PointF();
+        }
+
+        @Override
+        protected PointF resetInstance(PointF obj) {
+            obj.set(0f, 0f);
+            return obj;
+        }
+    }
+
 
     ////////////////////////////////数学计算工具类////////////////////////////////
 
@@ -903,6 +921,12 @@ public class PinchImageView extends ImageView  {
             return mRectFPool.take();
         }
 
+        public static RectF rectFTake(float left, float top, float right, float bottom) {
+            RectF result = mRectFPool.take();
+            result.set(left, top, right, bottom);
+            return result;
+        }
+
         public static RectF rectFTake(RectF rectF) {
             RectF result = mRectFPool.take();
             if (rectF != null) {
@@ -913,6 +937,30 @@ public class PinchImageView extends ImageView  {
 
         public static void rectFGiven(RectF rectF) {
             mRectFPool.given(rectF);
+        }
+
+        private static PointFPool mPointFPool = new PointFPool(16);
+
+        public static PointF pointFTake() {
+            return mPointFPool.take();
+        }
+
+        public static PointF pointFTake(float x, float y) {
+            PointF result = mPointFPool.take();
+            result.set(x, y);
+            return result;
+        }
+
+        public static PointF pointFTake(PointF pointF) {
+            PointF result = mPointFPool.take();
+            if (pointF != null) {
+                result.set(pointF);
+            }
+            return result;
+        }
+
+        public static void pointFGiven(PointF pointF) {
+            mPointFPool.given(pointF);
         }
 
         //获取两点距离
