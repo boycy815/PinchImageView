@@ -12,7 +12,9 @@ import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * 手势图片控件
@@ -806,9 +808,112 @@ public class PinchImageView extends ImageView  {
     }
 
 
+    ////////////////////////////////防止内存抖动复用对象////////////////////////////////
+
+    private static abstract class ObjectsPool<T> {
+
+        private int mSize;
+        private Queue<T> mQueue;
+
+        public ObjectsPool(int size) {
+            mSize = size;
+            mQueue = new LinkedList<T>();
+        }
+
+        public T take() {
+            if (mQueue.size() == 0) {
+                return newInstance();
+            } else {
+                return resetInstance(mQueue.poll());
+            }
+        }
+
+        public void given(T obj) {
+            if (obj != null && mQueue.size() < mSize) {
+                mQueue.offer(obj);
+            }
+        }
+
+        abstract protected T newInstance();
+        abstract protected T resetInstance(T obj);
+    }
+
+    private static class MatrixPool extends ObjectsPool<Matrix> {
+
+        public MatrixPool(int size) {
+            super(size);
+        }
+
+        @Override
+        protected Matrix newInstance() {
+            return new Matrix();
+        }
+
+        @Override
+        protected Matrix resetInstance(Matrix obj) {
+            obj.reset();
+            return obj;
+        }
+    }
+
+    private static class RectFPool extends ObjectsPool<RectF> {
+
+        public RectFPool(int size) {
+            super(size);
+        }
+
+        @Override
+        protected RectF newInstance() {
+            return new RectF();
+        }
+
+        @Override
+        protected RectF resetInstance(RectF obj) {
+            obj.setEmpty();
+            return obj;
+        }
+    }
+
+
     ////////////////////////////////数学计算工具类////////////////////////////////
 
     public static class MathUtils {
+
+        private static MatrixPool mMatrixPool = new MatrixPool(16);
+
+        public static Matrix matrixTake() {
+            return mMatrixPool.take();
+        }
+
+        public static Matrix matrixTake(Matrix matrix) {
+            Matrix result = mMatrixPool.take();
+            if (matrix != null) {
+                result.set(matrix);
+            }
+            return result;
+        }
+
+        public static void matrixGiven(Matrix matrix) {
+            mMatrixPool.given(matrix);
+        }
+
+        private static RectFPool mRectFPool = new RectFPool(16);
+
+        public static RectF rectFTake() {
+            return mRectFPool.take();
+        }
+
+        public static RectF rectFTake(RectF rectF) {
+            RectF result = mRectFPool.take();
+            if (rectF != null) {
+                result.set(rectF);
+            }
+            return result;
+        }
+
+        public static void rectFGiven(RectF rectF) {
+            mRectFPool.given(rectF);
+        }
 
         //获取两点距离
         public static float getDistance(float x1, float y1, float x2, float y2) {
