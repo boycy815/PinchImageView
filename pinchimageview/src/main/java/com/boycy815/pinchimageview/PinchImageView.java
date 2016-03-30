@@ -94,27 +94,23 @@ public class PinchImageView extends ImageView  {
         } else {
             matrix.reset();
         }
-        if (getDrawable() != null) {
+        if (isReady()) {
             //控件大小
             float displayWidth = getWidth();
             float displayHeight = getHeight();
-            if (displayWidth > 0 && displayHeight > 0) {
-                //原图大小
-                float imageWidth = getDrawable().getIntrinsicWidth();
-                float imageHeight = getDrawable().getIntrinsicHeight();
-                if (imageWidth > 0 && imageHeight > 0) {
-                    float scale;
-                    //如果计算fit center状态所需的scale大小
-                    if (imageWidth / imageHeight > displayWidth / displayHeight) {
-                        scale = displayWidth / imageWidth;
-                    } else {
-                        scale = displayHeight / imageHeight;
-                    }
-                    //设置fit center状态的scale和位置
-                    matrix.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
-                    matrix.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
-                }
+            //原图大小
+            float imageWidth = getDrawable().getIntrinsicWidth();
+            float imageHeight = getDrawable().getIntrinsicHeight();
+            float scale;
+            //如果计算fit center状态所需的scale大小
+            if (imageWidth / imageHeight > displayWidth / displayHeight) {
+                scale = displayWidth / imageWidth;
+            } else {
+                scale = displayHeight / imageHeight;
             }
+            //设置fit center状态的scale和位置
+            matrix.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
+            matrix.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
         }
         return matrix;
     }
@@ -135,11 +131,7 @@ public class PinchImageView extends ImageView  {
         } else {
             rectF.setEmpty();
         }
-        if (getDrawable() == null
-                || getDrawable().getIntrinsicWidth() <= 0
-                || getDrawable().getIntrinsicHeight() <= 0
-                || getWidth() <= 0
-                || getHeight() <= 0) {
+        if (!isReady()) {
             return rectF;
         } else {
             Matrix matrix = MathUtils.matrixTake();
@@ -345,7 +337,7 @@ public class PinchImageView extends ImageView  {
     @Override
     protected void onDraw(Canvas canvas) {
         //在绘制前设置变换矩阵
-        if (getDrawable() != null && getDrawable().getIntrinsicWidth() > 0 && getDrawable().getIntrinsicHeight() > 0) {
+        if (isReady()) {
             Matrix matrix = MathUtils.matrixTake();
             setImageMatrix(getCurrentImageMatrix(matrix));
             MathUtils.matrixGiven(matrix);
@@ -359,6 +351,14 @@ public class PinchImageView extends ImageView  {
         } else {
             super.onDraw(canvas);
         }
+    }
+
+
+    ////////////////////////////////有效性判断////////////////////////////////
+
+    private boolean isReady() {
+        return getDrawable() != null && getDrawable().getIntrinsicWidth() > 0 && getDrawable().getIntrinsicHeight() > 0
+                && getWidth() > 0 && getHeight() > 0;
     }
 
 
@@ -520,7 +520,7 @@ public class PinchImageView extends ImageView  {
 
     //让图片移动一段距离，返回是否真的移动了
     private boolean scrollBy(float xDiff, float yDiff) {
-        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
+        if (!isReady()) {
             return false;
         }
         //原图方框
@@ -597,7 +597,7 @@ public class PinchImageView extends ImageView  {
      * @param lineCenter 缩放点中心
      */
     private void scale(PointF scaleCenter, float scaleBase, float distance, PointF lineCenter) {
-        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
+        if (!isReady()) {
             return;
         }
         //计算第二层缩放值
@@ -619,7 +619,7 @@ public class PinchImageView extends ImageView  {
     //当当前缩放比例小于1，双击放大到1
     //当当前缩放比例等于MaxScale，双击缩小到屏幕大小
     private void doubleTap(float x, float y) {
-        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
+        if (!isReady()) {
             return;
         }
         //获取第一层变换矩阵
@@ -685,7 +685,7 @@ public class PinchImageView extends ImageView  {
 
     //当缩放操作结束如果不在正确位置用动画恢复
     private void scaleEnd() {
-        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
+        if (!isReady()) {
             return;
         }
         //是否修正了位置
@@ -762,7 +762,7 @@ public class PinchImageView extends ImageView  {
     }
 
     private void fling(float vx, float vy) {
-        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
+        if (!isReady()) {
             return;
         }
         //清理当前可能正在执行的动画
