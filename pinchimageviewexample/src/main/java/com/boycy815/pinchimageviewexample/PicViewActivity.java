@@ -68,9 +68,12 @@ public class PicViewActivity extends Activity {
 
 
                 //图片放大动画
-                RectF thumbImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(rect), bitmap.getWidth(), bitmap.getHeight(), scaleType);
-                RectF bigImageMatrixRect = PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight()), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER);
-                mThumbImageMatrix = PinchImageView.MathUtils.calculateRectTranslateMatrix(bigImageMatrixRect, thumbImageMatrixRect);
+                RectF thumbImageMatrixRect = new RectF();
+                PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(rect), bitmap.getWidth(), bitmap.getHeight(), scaleType, thumbImageMatrixRect);
+                RectF bigImageMatrixRect = new RectF();
+                PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, mImageView.getWidth(), mImageView.getHeight()), bitmap.getWidth(), bitmap.getHeight(), ImageView.ScaleType.FIT_CENTER, bigImageMatrixRect);
+                mThumbImageMatrix = new Matrix();
+                PinchImageView.MathUtils.calculateRectTranslateMatrix(bigImageMatrixRect, thumbImageMatrixRect, mThumbImageMatrix);
                 mImageView.outerMatrixTo(mThumbImageMatrix, 0);
                 mImageView.outerMatrixTo(new Matrix(), ANIM_TIME);
             }

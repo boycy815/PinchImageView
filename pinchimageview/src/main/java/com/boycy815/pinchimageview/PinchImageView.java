@@ -948,9 +948,10 @@ public class PinchImageView extends ImageView  {
         public static float[] inverseMatrixPoint(float[] point, Matrix matrix) {
             if (point != null && matrix != null) {
                 float[] dst = new float[2];
-                Matrix inverse = new Matrix();
+                Matrix inverse = matrixTake();
                 matrix.invert(inverse);
                 inverse.mapPoints(dst, point);
+                matrixGiven(inverse);
                 return dst;
             } else {
                 return new float[2];
@@ -958,32 +959,46 @@ public class PinchImageView extends ImageView  {
         }
 
         //计算两个矩形之间的变换矩阵
-        public static Matrix calculateRectTranslateMatrix(RectF from, RectF to) {
-            Matrix matrix = new Matrix();
-            matrix.postTranslate(-from.left, -from.top);
-            matrix.postScale(to.width() / from.width(), to.height() / from.height());
-            matrix.postTranslate(to.left, to.top);
-            return matrix;
+        public static void calculateRectTranslateMatrix(RectF from, RectF to, Matrix result) {
+            if (from == null || to == null || result == null) {
+                return;
+            }
+            if (from.width() == 0f || from.height() == 0f) {
+                return;
+            }
+            result.reset();
+            result.postTranslate(-from.left, -from.top);
+            result.postScale(to.width() / from.width(), to.height() / from.height());
+            result.postTranslate(to.left, to.top);
         }
 
-        public static RectF calculateScaledRectInContainer(RectF container, float srcWidth, float srcHeight, ScaleType scaleType) {
+        public static void calculateScaledRectInContainer(RectF container, float srcWidth, float srcHeight, ScaleType scaleType, RectF result) {
+            if (container == null || result == null) {
+                return;
+            }
+            if (srcWidth == 0 || srcHeight == 0) {
+                return;
+            }
+            if (scaleType == null) {
+                scaleType = ScaleType.FIT_CENTER;
+            }
+            result.setEmpty();
             if (ScaleType.FIT_XY.equals(scaleType)) {
-                RectF result = new RectF();
                 result.set(container);
-                return result;
             } else if (ScaleType.CENTER.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
                 matrix.setTranslate((container.width() - srcWidth) * 0.5f, (container.height() - srcHeight) * 0.5f);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else if (ScaleType.CENTER_CROP.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
                 float scale;
                 float dx = 0;
                 float dy = 0;
@@ -996,15 +1011,16 @@ public class PinchImageView extends ImageView  {
                 }
                 matrix.setScale(scale, scale);
                 matrix.postTranslate(dx, dy);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else if (ScaleType.CENTER_INSIDE.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
                 float scale;
                 float dx;
                 float dy;
@@ -1017,52 +1033,60 @@ public class PinchImageView extends ImageView  {
                 dy = (container.height() - srcHeight * scale) * 0.5f;
                 matrix.setScale(scale, scale);
                 matrix.postTranslate(dx, dy);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else if (ScaleType.FIT_CENTER.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
-                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
-                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempSrc = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempDst = rectFTake(0, 0, container.width(), container.height());
                 matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(tempDst);
+                rectFGiven(tempSrc);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else if (ScaleType.FIT_START.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
-                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
-                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempSrc = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempDst = rectFTake(0, 0, container.width(), container.height());
                 matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.START);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(tempDst);
+                rectFGiven(tempSrc);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else if (ScaleType.FIT_END.equals(scaleType)) {
-                RectF result = new RectF();
-                Matrix matrix = new Matrix();
-                RectF tempSrc = new RectF(0, 0, srcWidth, srcHeight);
-                RectF tempDst = new RectF(0, 0, container.width(), container.height());
+                Matrix matrix = matrixTake();
+                RectF rect = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempSrc = rectFTake(0, 0, srcWidth, srcHeight);
+                RectF tempDst = rectFTake(0, 0, container.width(), container.height());
                 matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.END);
-                matrix.mapRect(result, new RectF(0, 0, srcWidth, srcHeight));
+                matrix.mapRect(result, rect);
+                rectFGiven(tempDst);
+                rectFGiven(tempSrc);
+                rectFGiven(rect);
+                matrixGiven(matrix);
                 result.left += container.left;
                 result.right += container.left;
                 result.top += container.top;
                 result.bottom += container.top;
-                return result;
             } else {
-                RectF result = new RectF();
                 result.set(container);
-                return result;
             }
         }
     }
