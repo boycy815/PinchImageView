@@ -77,18 +77,27 @@ public class PinchImageView extends ImageView  {
     private int mPinchMode = PINCH_MODE_FREE;
 
     //获取外部矩阵
-    public Matrix getOuterMatrix() {
-        return new Matrix(mOuterMatrix);
+    public Matrix getOuterMatrix(Matrix matrix) {
+        if (matrix == null) {
+            matrix = new Matrix(mOuterMatrix);
+        } else {
+            matrix.set(mOuterMatrix);
+        }
+        return matrix;
     }
 
     //获取内部矩阵，换了图之后如果图片大小不一样，会重新计算个新的从而保证fit center状态
-    //返回的是copy值
-    public Matrix getInnerMatrix() {
-        Matrix result = new Matrix();
+    //如果控件大小或者图片大小无效,则返回单位矩阵,所以调用之前需要保证它们有效
+    public Matrix getInnerMatrix(Matrix matrix) {
+        if (matrix == null) {
+            matrix = new Matrix();
+        } else {
+            matrix.reset();
+        }
         if (getDrawable() != null) {
             //控件大小
-            float displayWidth = getMeasuredWidth();
-            float displayHeight = getMeasuredHeight();
+            float displayWidth = getWidth();
+            float displayHeight = getHeight();
             if (displayWidth > 0 && displayHeight > 0) {
                 //原图大小
                 float imageWidth = getDrawable().getIntrinsicWidth();
@@ -102,30 +111,43 @@ public class PinchImageView extends ImageView  {
                         scale = displayHeight / imageHeight;
                     }
                     //设置fit center状态的scale和位置
-                    result.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
-                    result.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
+                    matrix.postScale(scale, scale, imageWidth / 2f, imageHeight / 2f);
+                    matrix.postTranslate((displayWidth - imageWidth) / 2f, (displayHeight - imageHeight) / 2f);
                 }
             }
         }
-        return result;
+        return matrix;
     }
 
     //获取图片总变换矩阵
-    public Matrix getCurrentImageMatrix() {
-        Matrix result = getInnerMatrix();
-        result.postConcat(mOuterMatrix);
-        return result;
+    //需要保证控件大小和者图片大小有效
+    public Matrix getCurrentImageMatrix(Matrix matrix) {
+        matrix = getInnerMatrix(matrix);
+        matrix.postConcat(mOuterMatrix);
+        return matrix;
     }
 
-    //获取当前图片变换后的矩形，如果没有图片则返回null
-    public RectF getImageBound() {
-        if (getDrawable() == null) {
-            return null;
+    //获取当前图片变换后的矩形
+    //需要保证控件大小和者图片大小有效
+    public RectF getImageBound(RectF rectF) {
+        if (rectF == null) {
+            rectF = new RectF();
         } else {
-            Matrix matrix = getCurrentImageMatrix();
-            RectF bound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
-            matrix.mapRect(bound);
-            return bound;
+            rectF.setEmpty();
+        }
+        if (getDrawable() == null
+                || getDrawable().getIntrinsicWidth() <= 0
+                || getDrawable().getIntrinsicHeight() <= 0
+                || getWidth() <= 0
+                || getHeight() <= 0) {
+            return rectF;
+        } else {
+            Matrix matrix = MathUtils.matrixTake();
+            getCurrentImageMatrix(matrix);
+            rectF.set(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+            matrix.mapRect(rectF);
+            MathUtils.matrixGiven(matrix);
+            return rectF;
         }
     }
 
@@ -147,9 +169,10 @@ public class PinchImageView extends ImageView  {
     ////////////////////////////////公共状态设置////////////////////////////////
 
     //执行缩放动画,会停止当前所有的手势和手势动画
-    public void outerMatrixTo(Matrix matrix, long duration) {
-        Matrix startMatrix = new Matrix(mOuterMatrix);
-        Matrix endMatrix = new Matrix(matrix);
+    public void outerMatrixTo(Matrix endMatrix, long duration) {
+        if (endMatrix == null) {
+            return;
+        }
         mPinchMode = PINCH_MODE_FREE;
         cancelAllAnimator();
         if (duration <= 0) {
@@ -157,34 +180,35 @@ public class PinchImageView extends ImageView  {
             dispatchOuterMatrixChanged();
             invalidate();
         } else {
-            mScaleAnimator = new ScaleAnimator(startMatrix, endMatrix, duration);
+            mScaleAnimator = new ScaleAnimator(mOuterMatrix, endMatrix, duration);
             mScaleAnimator.start();
         }
     }
 
     //执行mask动画
     public void zoomMaskTo(RectF mask, long duration) {
-        if (mask != null) {
-            if (mMaskAnimator != null) {
-                mMaskAnimator.cancel();
-                mMaskAnimator = null;
+        if (mask == null) {
+            return;
+        }
+        if (mMaskAnimator != null) {
+            mMaskAnimator.cancel();
+            mMaskAnimator = null;
+        }
+        if (duration <= 0 || mMask == null) {
+            if (mMask == null) {
+                mMask = new RectF();
             }
-            if (duration <= 0 || mMask == null) {
-                if (mMask == null) {
-                    mMask = new RectF();
-                }
-                mMask.set(mask);
-                invalidate();
-            } else {
-                mMaskAnimator = new MaskAnimator(mMask, mask, duration);
-                mMaskAnimator.start();
-            }
+            mMask.set(mask);
+            invalidate();
+        } else {
+            mMaskAnimator = new MaskAnimator(mMask, mask, duration);
+            mMaskAnimator.start();
         }
     }
 
     //停止所有动画，重置位置到fit center状态
     public void reset() {
-        mOuterMatrix.set(new Matrix());
+        mOuterMatrix.reset();
         dispatchOuterMatrixChanged();
         mMask = null;
         mPinchMode = PINCH_MODE_FREE;
@@ -321,8 +345,10 @@ public class PinchImageView extends ImageView  {
     @Override
     protected void onDraw(Canvas canvas) {
         //在绘制前设置变换矩阵
-        if (getDrawable() != null) {
-            setImageMatrix(getCurrentImageMatrix());
+        if (getDrawable() != null && getDrawable().getIntrinsicWidth() > 0 && getDrawable().getIntrinsicHeight() > 0) {
+            Matrix matrix = MathUtils.matrixTake();
+            setImageMatrix(getCurrentImageMatrix(matrix));
+            MathUtils.matrixGiven(matrix);
         }
         //对图像做遮罩处理
         if (mMask != null) {
@@ -494,14 +520,15 @@ public class PinchImageView extends ImageView  {
 
     //让图片移动一段距离，返回是否真的移动了
     private boolean scrollBy(float xDiff, float yDiff) {
-        if (getDrawable() == null) {
+        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
             return false;
         }
         //原图方框
-        RectF bound = getImageBound();
+        RectF bound = MathUtils.rectFTake();
+        getImageBound(bound);
         //控件大小
-        float displayWidth = getMeasuredWidth();
-        float displayHeight = getMeasuredHeight();
+        float displayWidth = getWidth();
+        float displayHeight = getHeight();
         //如果当前图片宽度小于控件宽度，则不能移动
         if (bound.right - bound.left < displayWidth) {
             xDiff = 0;
@@ -540,6 +567,7 @@ public class PinchImageView extends ImageView  {
                 yDiff = 0;
             }
         }
+        MathUtils.rectFGiven(bound);
         //应用移动变换
         mOuterMatrix.postTranslate(xDiff, yDiff);
         dispatchOuterMatrixChanged();
@@ -569,17 +597,18 @@ public class PinchImageView extends ImageView  {
      * @param lineCenter 缩放点中心
      */
     private void scale(PointF scaleCenter, float scaleBase, float distance, PointF lineCenter) {
-        if (getDrawable() == null) {
+        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
             return;
         }
         //计算第二层缩放值
         float scale = scaleBase * distance;
-        Matrix matrix = new Matrix();
+        Matrix matrix = MathUtils.matrixTake();
         //按照图片缩放中心缩放，并且让缩放中心在缩放点中点上
         matrix.postScale(scale, scale, scaleCenter.x, scaleCenter.y);
         matrix.postTranslate(lineCenter.x - scaleCenter.x, lineCenter.y - scaleCenter.y);
         //应用变换
         mOuterMatrix.set(matrix);
+        MathUtils.matrixGiven(matrix);
         dispatchOuterMatrixChanged();
         //重绘
         invalidate();
@@ -590,18 +619,19 @@ public class PinchImageView extends ImageView  {
     //当当前缩放比例小于1，双击放大到1
     //当当前缩放比例等于MaxScale，双击缩小到屏幕大小
     private void doubleTap(float x, float y) {
-        if (getDrawable() == null) {
+        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
             return;
         }
         //获取第一层变换矩阵
-        Matrix innerMatrix = getInnerMatrix();
+        Matrix innerMatrix = MathUtils.matrixTake();
+        getInnerMatrix(innerMatrix);
         //当前总的缩放比例
         float innerScale = MathUtils.getMatrixScale(innerMatrix)[0];
         float outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
         float currentScale = innerScale * outerScale;
         //控件大小
-        float displayWidth = getMeasuredWidth();
-        float displayHeight = getMeasuredHeight();
+        float displayWidth = getWidth();
+        float displayHeight = getHeight();
         //最大放大大小
         float maxScale = getMaxScale();
         //接下来要放大的大小
@@ -612,18 +642,16 @@ public class PinchImageView extends ImageView  {
         } else if (nextScale > maxScale) {
             nextScale = maxScale;
         }
-        //缩放动画初始矩阵为当前矩阵值
-        Matrix animStart = new Matrix(mOuterMatrix);
         //开始计算缩放动画的结果矩阵
-        Matrix animEnd = new Matrix(mOuterMatrix);
+        Matrix animEnd = MathUtils.matrixTake(mOuterMatrix);
         //计算还需缩放的倍数
         animEnd.postScale(nextScale / currentScale, nextScale / currentScale, x, y);
         //将放大点移动到控件中心
         animEnd.postTranslate(displayWidth / 2 - x, displayHeight / 2 - y);
         //得到放大之后的图片方框
-        Matrix testMatrix = new Matrix(innerMatrix);
+        Matrix testMatrix = MathUtils.matrixTake(innerMatrix);
         testMatrix.postConcat(animEnd);
-        RectF testBound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+        RectF testBound = MathUtils.rectFTake(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
         testMatrix.mapRect(testBound);
         //修正位置
         float postX = 0;
@@ -647,26 +675,31 @@ public class PinchImageView extends ImageView  {
         //清理当前可能正在执行的动画
         cancelAllAnimator();
         //启动矩阵动画
-        mScaleAnimator = new ScaleAnimator(animStart, animEnd);
+        mScaleAnimator = new ScaleAnimator(mOuterMatrix, animEnd);
+        MathUtils.rectFGiven(testBound);
+        MathUtils.matrixGiven(testMatrix);
+        MathUtils.matrixGiven(animEnd);
+        MathUtils.matrixGiven(innerMatrix);
         mScaleAnimator.start();
     }
 
     //当缩放操作结束如果不在正确位置用动画恢复
     private void scaleEnd() {
-        if (getDrawable() == null) {
+        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
             return;
         }
         //是否修正了位置
         boolean change = false;
         //获取图片整体的变换矩阵
-        Matrix currentMatrix = getCurrentImageMatrix();
+        Matrix currentMatrix = MathUtils.matrixTake();
+        getCurrentImageMatrix(currentMatrix);
         //整体缩放比例
         float currentScale = MathUtils.getMatrixScale(currentMatrix)[0];
         //第二层缩放比例
         float outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0];
         //控件大小
-        float displayWidth = getMeasuredWidth();
-        float displayHeight = getMeasuredHeight();
+        float displayWidth = getWidth();
+        float displayHeight = getHeight();
         float maxScale = getMaxScale();
         //比例修正
         float scalePost = 1;
@@ -686,9 +719,9 @@ public class PinchImageView extends ImageView  {
             change = true;
         }
         //尝试根据缩放点进行缩放修正
-        Matrix testMatrix = new Matrix(currentMatrix);
+        Matrix testMatrix = MathUtils.matrixTake(currentMatrix);
         testMatrix.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y);
-        RectF testBound = new RectF(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+        RectF testBound = MathUtils.rectFTake(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
         //获取缩放修正后的图片方框
         testMatrix.mapRect(testBound);
         //检测缩放修正后位置有无超出，如果超出进行位置修正
@@ -712,22 +745,24 @@ public class PinchImageView extends ImageView  {
         }
         //只有有执行修正才执行动画
         if (change) {
-            //动画开始矩阵
-            Matrix animStart = new Matrix(mOuterMatrix);
             //计算结束矩阵
-            Matrix animEnd = new Matrix(mOuterMatrix);
+            Matrix animEnd = MathUtils.matrixTake(mOuterMatrix);
             animEnd.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y);
             animEnd.postTranslate(postX, postY);
             //清理当前可能正在执行的动画
             cancelAllAnimator();
             //启动矩阵动画
-            mScaleAnimator = new ScaleAnimator(animStart, animEnd);
+            mScaleAnimator = new ScaleAnimator(mOuterMatrix, animEnd);
+            MathUtils.matrixGiven(animEnd);
             mScaleAnimator.start();
         }
+        MathUtils.rectFGiven(testBound);
+        MathUtils.matrixGiven(testMatrix);
+        MathUtils.matrixGiven(currentMatrix);
     }
 
     private void fling(float vx, float vy) {
-        if (getDrawable() == null) {
+        if (getDrawable() == null || getDrawable().getIntrinsicWidth() <= 0 || getDrawable().getIntrinsicHeight() <= 0) {
             return;
         }
         //清理当前可能正在执行的动画

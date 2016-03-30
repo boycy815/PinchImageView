@@ -1789,7 +1789,7 @@ public class PinchImageViewPager extends ViewGroup {
             if (mMainPinchImageView.getPinchMode() == PinchImageView.PINCH_MODE_SCALE) {
                 return true;
             }
-            RectF bound = mMainPinchImageView.getImageBound();
+            RectF bound = mMainPinchImageView.getImageBound(null);
             if (bound != null) {
                 if (dx < 0) {
                     if (bound.right <= mMainPinchImageView.getMeasuredWidth()) {
