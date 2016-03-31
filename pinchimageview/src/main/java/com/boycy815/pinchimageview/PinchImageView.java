@@ -627,7 +627,7 @@ public class PinchImageView extends ImageView  {
          */
         public MaskAnimator(RectF start, RectF end, long duration) {
             super();
-            setFloatValues(0, 1);
+            setFloatValues(0, 1f);
             setDuration(duration);
             addUpdateListener(this);
             //将起点终点拷贝到数组方便计算
@@ -997,7 +997,7 @@ public class PinchImageView extends ImageView  {
         //计算还需缩放的倍数
         animEnd.postScale(nextScale / currentScale, nextScale / currentScale, x, y);
         //将放大点移动到控件中心
-        animEnd.postTranslate(displayWidth / 2 - x, displayHeight / 2 - y);
+        animEnd.postTranslate(displayWidth / 2f - x, displayHeight / 2f - y);
         //得到放大之后的图片方框
         Matrix testMatrix = MathUtils.matrixTake(innerMatrix);
         testMatrix.postConcat(animEnd);
@@ -1007,14 +1007,14 @@ public class PinchImageView extends ImageView  {
         float postX = 0;
         float postY = 0;
         if (testBound.right - testBound.left < displayWidth) {
-            postX = displayWidth / 2 - (testBound.right + testBound.left) / 2;
+            postX = displayWidth / 2f - (testBound.right + testBound.left) / 2f;
         } else if (testBound.left > 0) {
             postX = -testBound.left;
         } else if (testBound.right < displayWidth) {
             postX = displayWidth - testBound.right;
         }
         if (testBound.bottom - testBound.top < displayHeight) {
-            postY = displayHeight / 2 - (testBound.bottom + testBound.top) / 2;
+            postY = displayHeight / 2f - (testBound.bottom + testBound.top) / 2f;
         } else if (testBound.top > 0) {
             postY = -testBound.top;
         } else if (testBound.bottom < displayHeight) {
@@ -1059,7 +1059,7 @@ public class PinchImageView extends ImageView  {
         //最大缩放比例
         float maxScale = getMaxScale();
         //比例修正
-        float scalePost = 1;
+        float scalePost = 1f;
         //位置修正
         float postX = 0;
         float postY = 0;
@@ -1068,11 +1068,11 @@ public class PinchImageView extends ImageView  {
             scalePost = maxScale / currentScale;
         }
         //如果缩放修正后整体导致第二层缩放小于1（就是图片比fit center状态还小），重新修正缩放
-        if (outerScale * scalePost < 1) {
-            scalePost = 1 / outerScale;
+        if (outerScale * scalePost < 1f) {
+            scalePost = 1f / outerScale;
         }
         //如果缩放修正不为1，说明进行了修正
-        if (scalePost != 1) {
+        if (scalePost != 1f) {
             change = true;
         }
         //尝试根据缩放点进行缩放修正
@@ -1083,14 +1083,14 @@ public class PinchImageView extends ImageView  {
         testMatrix.mapRect(testBound);
         //检测缩放修正后位置有无超出，如果超出进行位置修正
         if (testBound.right - testBound.left < displayWidth) {
-            postX = displayWidth / 2 - (testBound.right + testBound.left) / 2;
+            postX = displayWidth / 2f - (testBound.right + testBound.left) / 2f;
         } else if (testBound.left > 0) {
             postX = -testBound.left;
         } else if (testBound.right < displayWidth) {
             postX = displayWidth - testBound.right;
         }
         if (testBound.bottom - testBound.top < displayHeight) {
-            postY = displayHeight / 2 - (testBound.bottom + testBound.top) / 2;
+            postY = displayHeight / 2f - (testBound.bottom + testBound.top) / 2f;
         } else if (testBound.top > 0) {
             postY = -testBound.top;
         } else if (testBound.bottom < displayHeight) {
@@ -1180,7 +1180,7 @@ public class PinchImageView extends ImageView  {
          */
         public FlingAnimator(float vectorX, float vectorY) {
             super();
-            setFloatValues(0, 1);
+            setFloatValues(0, 1f);
             setDuration(1000000);
             addUpdateListener(this);
             mVector = new float[]{vectorX, vectorY};
@@ -1194,7 +1194,7 @@ public class PinchImageView extends ImageView  {
             mVector[0] *= FLING_DAMPING_FACTOR;
             mVector[1] *= FLING_DAMPING_FACTOR;
             //速度太小或者不能移动了就结束
-            if (!result || MathUtils.getDistance(0, 0, mVector[0], mVector[1]) < 1) {
+            if (!result || MathUtils.getDistance(0, 0, mVector[0], mVector[1]) < 1f) {
                 animation.cancel();
             }
         }
@@ -1245,7 +1245,7 @@ public class PinchImageView extends ImageView  {
          */
         public ScaleAnimator(Matrix start, Matrix end, long duration) {
             super();
-            setFloatValues(0, 1);
+            setFloatValues(0, 1f);
             setDuration(duration);
             addUpdateListener(this);
             start.getValues(mStart);
@@ -1560,7 +1560,7 @@ public class PinchImageView extends ImageView  {
             if (from == null || to == null || result == null) {
                 return;
             }
-            if (from.width() == 0f || from.height() == 0f) {
+            if (from.width() == 0 || from.height() == 0) {
                 return;
             }
             result.reset();
@@ -1632,7 +1632,7 @@ public class PinchImageView extends ImageView  {
                 float dx;
                 float dy;
                 if (srcWidth <= container.width() && srcHeight <= container.height()) {
-                    scale = 1.0f;
+                    scale = 1f;
                 } else {
                     scale = Math.min(container.width() / srcWidth, container.height() / srcHeight);
                 }
