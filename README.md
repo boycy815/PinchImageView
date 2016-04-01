@@ -4,7 +4,7 @@
 
 ## Demo Video
 
-<video src="demo/demo.mp4" controls="controls" />
+Demo视频下载：**[demo.mp4](demo/demo.mp4)**
 
 APK下载：**[demo.apk](demo/demo.apk)**
 
