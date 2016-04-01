@@ -1,13 +1,15 @@
-package com.boycy815.pinchimageviewexample;
+package com.boycy815.pinchimageviewexample.withviewpager;
 
 import android.app.Activity;
-import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.boycy815.pinchimageview.PinchImageView;
+import com.boycy815.pinchimageviewexample.Global;
+import com.boycy815.pinchimageviewexample.R;
+import com.boycy815.pinchimageviewexample.images.ImageSource;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 import java.util.LinkedList;
@@ -21,12 +23,14 @@ public class PagerActivity extends Activity {
         setContentView(R.layout.activity_pager);
 
         final LinkedList<PinchImageView> viewCache = new LinkedList<PinchImageView>();
+        final DisplayImageOptions thumbOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
+        final DisplayImageOptions originOptions = new DisplayImageOptions.Builder().build();
 
         final PinchImageViewPager pager = (PinchImageViewPager) findViewById(R.id.pager);
         pager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {
-                return Global.images.length;
+                return Global.getTestImagesCount();
             }
 
             @Override
@@ -43,8 +47,8 @@ public class PagerActivity extends Activity {
                 } else {
                     piv = new PinchImageView(PagerActivity.this);
                 }
-                DisplayImageOptions options = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).build();
-                Global.getImageLoader(getApplicationContext()).displayImage(Global.images[position], piv, options);
+                ImageSource image = Global.getTestImage(position);
+                Global.getImageLoader(getApplicationContext()).displayImage(image.getUrl(100, 100), piv, thumbOptions);
                 container.addView(piv);
                 return piv;
             }
@@ -58,7 +62,10 @@ public class PagerActivity extends Activity {
 
             @Override
             public void setPrimaryItem(ViewGroup container, int position, Object object) {
-                pager.setMainPinchImageView((PinchImageView) object);
+                PinchImageView piv = (PinchImageView) object;
+                ImageSource image = Global.getTestImage(position);
+                Global.getImageLoader(getApplicationContext()).displayImage(image.getUrl(image.getOriginWidth(), image.getOriginHeight()), piv, originOptions);
+                pager.setMainPinchImageView(piv);
             }
         });
     }

@@ -987,10 +987,11 @@ public class PinchImageView extends ImageView  {
         //接下来要放大的大小
         float nextScale = calculateNextScale(innerScale, outerScale);
         //如果接下来放大大于最大值或者小于fit center值，则取边界
+        if (nextScale > maxScale) {
+            nextScale = maxScale;
+        }
         if (nextScale < innerScale) {
             nextScale = innerScale;
-        } else if (nextScale > maxScale) {
-            nextScale = maxScale;
         }
         //开始计算缩放动画的结果矩阵
         Matrix animEnd = MathUtils.matrixTake(mOuterMatrix);

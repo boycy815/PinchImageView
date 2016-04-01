@@ -15,15 +15,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PagerActivity"
+            android:name=".withviewpager.PagerActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".ThumbViewActivity"
+            android:name=".zoomtransition.ThumbViewActivity"
             android:label="@string/app_name">
         </activity>
         <activity
-            android:name=".PicViewActivity"
+            android:name=".zoomtransition.PicViewActivity"
             android:label="@string/app_name"
             android:theme="@style/pic_view">
         </activity>

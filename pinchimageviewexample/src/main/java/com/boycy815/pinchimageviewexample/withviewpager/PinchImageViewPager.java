@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.boycy815.pinchimageviewexample;
+package com.boycy815.pinchimageviewexample.withviewpager;
 
 import android.content.Context;
 import android.content.res.Resources;
