@@ -15,6 +15,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="点击放大动画"/>
+        <Button
+            android:id="@+id/btn_huge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="超大图浏览"/>
     </LinearLayout>
     <Button
         android:id="@+id/view_github"

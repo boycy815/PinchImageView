@@ -27,5 +27,9 @@
             android:label="@string/app_name"
             android:theme="@style/pic_view">
         </activity>
+        <activity
+            android:name=".huge.HugeActivity"
+            android:label="@string/app_name">
+        </activity>
     </application>
 </manifest>
