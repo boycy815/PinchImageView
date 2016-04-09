@@ -6,8 +6,6 @@
 
 ![demo](demo/demo.gif)
 
-Demo视频下载：**[demo.mp4](demo/demo.mp4)**
-
 APK下载：**[demo.apk](demo/demo.apk)**
 
 ### Demo说明
