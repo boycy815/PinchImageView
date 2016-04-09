@@ -44,12 +44,18 @@ public class TileDrawable extends Drawable {
 
     @Override
     public int getIntrinsicWidth() {
-        return mImageRegionLoader.getWidth();
+        if (mImageRegionLoader != null) {
+            return mImageRegionLoader.getWidth();
+        }
+        return 0;
     }
 
     @Override
     public int getIntrinsicHeight() {
-        return mImageRegionLoader.getHeight();
+        if (mImageRegionLoader != null) {
+            return mImageRegionLoader.getHeight();
+        }
+        return 0;
     }
 
     ////////////////////////////////init////////////////////////////////
