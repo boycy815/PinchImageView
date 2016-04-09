@@ -10,6 +10,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.ImageView;
 
 import com.boycy815.pinchimageview.PinchImageView;
@@ -183,10 +185,8 @@ public class TileDrawable extends Drawable {
             mTiles[layers - 1] = new Tile[]{new Tile(fullSample, new Rect(0, 0, iWidth, iHeight))};
             for (int i = 0; i < layers - 1; i++) {
                 int sample = 1 << i;
-                int widthAfterSample = Math.round((float) iWidth / (float) sample);
-                int heightAfterSample = Math.round((float) iHeight / (float) sample);
-                int[] widthFragments = cutFragments(widthAfterSample, sWidth);
-                int[] heightFragments = cutFragments(heightAfterSample, sHeight);
+                int[] widthFragments = cutFragments(iWidth, sWidth * sample);
+                int[] heightFragments = cutFragments(iHeight, sHeight * sample);
                 Tile[] subTiles = new Tile[widthFragments.length * heightFragments.length];
                 for (int h = 0; h < heightFragments.length; h++) {
                     for (int w = 0; w < widthFragments.length; w++) {
@@ -216,6 +216,21 @@ public class TileDrawable extends Drawable {
                 mImageRegionLoader.loadRegion(0, baseLayer.mSampleSize, baseLayer.mSampleRect);
             }
         }
+    }
+
+    private Handler mRequestCurrentTilesDelayHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (getCallback() != null && getCallback() instanceof PinchImageView) {
+                requestCurrentTiles((PinchImageView) getCallback());
+
+            }
+            return true;
+        }
+    });
+
+    private void requestCurrentTilesDelay(long delay) {
+        mRequestCurrentTilesDelayHandler.sendEmptyMessageDelayed(0, delay);
     }
 
     private void requestCurrentTiles(PinchImageView pinchImageView) {
@@ -284,20 +299,18 @@ public class TileDrawable extends Drawable {
 
     @Override
     public void draw(Canvas canvas) {
-        if (getCallback() != null && getCallback() instanceof PinchImageView) {
-            Rect bounds = getBounds();
-            canvas.save();
-            canvas.clipRect(bounds);
-            requestCurrentTiles((PinchImageView) getCallback());
-            if (mBitmapPaint == null) {
-                mBitmapPaint = new Paint();
-                mBitmapPaint.setAntiAlias(true);
-                mBitmapPaint.setFilterBitmap(true);
-                mBitmapPaint.setDither(true);
-            }
-            drawTiles(canvas, mBitmapPaint);
-            canvas.restore();
+        Rect bounds = getBounds();
+        canvas.save();
+        canvas.clipRect(bounds);
+        requestCurrentTilesDelay(200);
+        if (mBitmapPaint == null) {
+            mBitmapPaint = new Paint();
+            mBitmapPaint.setAntiAlias(true);
+            mBitmapPaint.setFilterBitmap(true);
+            mBitmapPaint.setDither(true);
         }
+        drawTiles(canvas, mBitmapPaint);
+        canvas.restore();
     }
 
     ////////////////////////////////utils////////////////////////////////
@@ -362,11 +375,6 @@ public class TileDrawable extends Drawable {
     }
 
     private static boolean hitTest(RectF rect1, RectF rect2) {
-        if ((rect1.left < rect2.left && rect1.right > rect2.left) || (rect1.left < rect2.right && rect1.right > rect2.right)) {
-            if ((rect1.top < rect2.top && rect1.bottom > rect2.top) || (rect1.top < rect2.bottom && rect1.bottom > rect2.bottom)) {
-                return true;
-            }
-        }
-        return false;
+        return new RectF(rect1).intersect(rect2);
     }
 }
