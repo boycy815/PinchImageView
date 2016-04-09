@@ -6,12 +6,14 @@
 
 ![demo](demo/demo.gif)
 
+完整Demo视频：[http://v.youku.com/v_show/id_XMTUyOTA0NzI3Ng==.html](http://v.youku.com/v_show/id_XMTUyOTA0NzI3Ng==.html)
+
 APK下载：**[demo.apk](demo/demo.apk)**
 
 ### Demo说明
 
-1. 手势控件与ViewPlayer结合，当图片不在当前页时加载一张缩略图，切换到当前页后更新成大图
-2. 点击缩略图切换到大图浏览使用放大动画过度，放大后从缩略图平滑切换到大图；当返回时从大图到缩略图使用动画果冻。
+1. 手势控件与ViewPlayer结合，当图片不在当前页时加载一张缩略图，切换到当前页后更新成大图。
+2. 点击缩略图切换到大图浏览使用放大动画过渡；当返回时从大图到缩略图使用动画过渡。无论大图到状态和小图的位置都保证过渡平滑。
 3. 浏览超大尺寸图片时使用分片加载策略保证不OOM。
 
 ## Features
