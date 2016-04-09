@@ -30,60 +30,72 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
 
     private int mWidth;
     private int mHeight;
-
     private BitmapRegionDecoder mDecoder;
 
-    public interface InitCallback {
-        void onInit();
+    private Context mContext;
+    private Uri mUri;
+
+    private boolean mIniting;
+    private boolean mRecyled;
+
+    public HugeImageRegionLoader(Context context, Uri uri) {
+        mContext = context;
+        mUri = uri;
     }
 
-    private InitCallback mInitCallback;
-
-    public HugeImageRegionLoader(Context context, Uri uri, InitCallback callback) {
-        mInitCallback = callback;
-        try {
-            String uriString = uri.toString();
-            if (uriString.startsWith(RESOURCE_PREFIX)) {
-                Resources res;
-                String packageName = uri.getAuthority();
-                if (context.getPackageName().equals(packageName)) {
-                    res = context.getResources();
+    @Override
+    public void init() {
+        if (!mIniting) {
+            mIniting = true;
+            try {
+                String uriString = mUri.toString();
+                if (uriString.startsWith(RESOURCE_PREFIX)) {
+                    Resources res;
+                    String packageName = mUri.getAuthority();
+                    if (mContext.getPackageName().equals(packageName)) {
+                        res = mContext.getResources();
+                    } else {
+                        PackageManager pm = mContext.getPackageManager();
+                        res = pm.getResourcesForApplication(packageName);
+                    }
+                    int id = 0;
+                    List<String> segments = mUri.getPathSegments();
+                    int size = segments.size();
+                    if (size == 2 && segments.get(0).equals("drawable")) {
+                        String resName = segments.get(1);
+                        id = res.getIdentifier(resName, "drawable", packageName);
+                    } else if (size == 1 && TextUtils.isDigitsOnly(segments.get(0))) {
+                        try {
+                            id = Integer.parseInt(segments.get(0));
+                        } catch (NumberFormatException ignored) {
+                            ignored.printStackTrace();
+                        }
+                    }
+                    (new InitTask()).execute(mContext.getResources().openRawResource(id));
+                } else if (uriString.startsWith(ASSET_PREFIX)) {
+                    String assetName = uriString.substring(ASSET_PREFIX.length());
+                    (new InitTask()).execute(mContext.getAssets().open(assetName, AssetManager.ACCESS_RANDOM));
+                } else if (uriString.startsWith(FILE_PREFIX)) {
+                    (new InitTask()).execute(new FileInputStream(uriString.substring(FILE_PREFIX.length())));
                 } else {
-                    PackageManager pm = context.getPackageManager();
-                    res = pm.getResourcesForApplication(packageName);
-                }
-                int id = 0;
-                List<String> segments = uri.getPathSegments();
-                int size = segments.size();
-                if (size == 2 && segments.get(0).equals("drawable")) {
-                    String resName = segments.get(1);
-                    id = res.getIdentifier(resName, "drawable", packageName);
-                } else if (size == 1 && TextUtils.isDigitsOnly(segments.get(0))) {
+                    InputStream inputStream = null;
                     try {
-                        id = Integer.parseInt(segments.get(0));
-                    } catch (NumberFormatException ignored) {
+                        ContentResolver contentResolver = mContext.getContentResolver();
+                        inputStream = contentResolver.openInputStream(mUri);
+                        (new InitTask()).execute(inputStream);
+                    } finally {
+                        if (inputStream != null) {
+                            try {
+                                inputStream.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
-                (new InitTask()).execute(context.getResources().openRawResource(id));
-            } else if (uriString.startsWith(ASSET_PREFIX)) {
-                String assetName = uriString.substring(ASSET_PREFIX.length());
-                (new InitTask()).execute(context.getAssets().open(assetName, AssetManager.ACCESS_RANDOM));
-            } else if (uriString.startsWith(FILE_PREFIX)) {
-                (new InitTask()).execute(new FileInputStream(uriString.substring(FILE_PREFIX.length())));
-            } else {
-                InputStream inputStream = null;
-                try {
-                    ContentResolver contentResolver = context.getContentResolver();
-                    inputStream = contentResolver.openInputStream(uri);
-                    (new InitTask()).execute(inputStream);
-                } finally {
-                    if (inputStream != null) {
-                        try { inputStream.close(); } catch (Exception e) { }
-                    }
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -107,13 +119,13 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
 
         @Override
         protected void onPostExecute(BitmapRegionDecoder result) {
-            mDecoder = result;
-            if (mDecoder != null) {
-                mWidth = mDecoder.getWidth();
-                mHeight = mDecoder.getHeight();
-            }
-            if (mInitCallback != null) {
-                mInitCallback.onInit();
+            if (!mRecyled) {
+                mDecoder = result;
+                if (mDecoder != null) {
+                    mWidth = mDecoder.getWidth();
+                    mHeight = mDecoder.getHeight();
+                    dispatchInited();
+                }
             }
         }
     }
@@ -131,16 +143,22 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
     private Map<String, Boolean> mRecycleCommands = new HashMap<String, Boolean>();
     private Map<String, Bitmap> mLoadedBitmaps = new HashMap<String, Bitmap>();
 
+    private String genKey(int id, int sampleSize) {
+        return sampleSize + ":" + id;
+    }
+
     @Override
     public void loadRegion(int id, int sampleSize, Rect sampleRect) {
-        String key = sampleSize + ":" + id;
-        if (mRecycleCommands.containsKey(key)) {
-            mRecycleCommands.remove(key);
-        }
-        if (mLoadedBitmaps.containsKey(key)) {
-            dispatchRegionLoad(id, sampleSize, sampleRect, mLoadedBitmaps.get(key));
-        } else {
-            (new LoadTask(id, sampleSize, sampleRect)).execute();
+        if(mDecoder != null) {
+            String key = genKey(id, sampleSize);
+            if (mRecycleCommands.containsKey(key)) {
+                mRecycleCommands.remove(key);
+            }
+            if (mLoadedBitmaps.containsKey(key)) {
+                dispatchRegionLoad(id, sampleSize, sampleRect, mLoadedBitmaps.get(key));
+            } else {
+                (new LoadTask(id, sampleSize, sampleRect)).execute();
+            }
         }
     }
 
@@ -158,7 +176,7 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            if (!isRecycled()) {
+            if (mDecoder != null) {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inSampleSize = mSampleSize;
                 options.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -169,8 +187,8 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
 
         @Override
         protected void onPostExecute(Bitmap result) {
-            if (result != null && !isRecycled()) {
-                String key = mSampleSize + ":" + mId;
+            if (result != null && mDecoder != null) {
+                String key = genKey(mId, mSampleSize);
                 if (!mRecycleCommands.containsKey(key)) {
                     if (mLoadedBitmaps.containsKey(key)) {
                         mLoadedBitmaps.get(key).recycle();
@@ -183,19 +201,22 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
     }
 
     @Override
-    public void recycleRegion(int id, int sampleSize, Rect sampleRect, Bitmap bitmap) {
-        String key = sampleSize + ":" + id;
-        bitmap = mLoadedBitmaps.get(key);
-        if (bitmap != null) {
-            mLoadedBitmaps.remove(key);
-            bitmap.recycle();
-        } else {
-            mRecycleCommands.put(sampleSize + ":" + id, true);
+    public void recycleRegion(int id, int sampleSize, Rect sampleRect) {
+        if (mDecoder != null) {
+            String key = genKey(id, sampleSize);
+            Bitmap bitmap = mLoadedBitmaps.get(key);
+            if (bitmap != null) {
+                mLoadedBitmaps.remove(key);
+                bitmap.recycle();
+            } else {
+                mRecycleCommands.put(key, true);
+            }
         }
     }
 
     @Override
     public void recycle() {
+        mRecyled = true;
         if (mDecoder != null) {
             mDecoder.recycle();
             mDecoder = null;
@@ -203,10 +224,6 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
         for (Bitmap bitmap : mLoadedBitmaps.values()) {
             bitmap.recycle();
         }
-    }
-
-    @Override
-    public boolean isRecycled() {
-        return mDecoder == null || mDecoder.isRecycled();
+        mLoadedBitmaps.clear();
     }
 }

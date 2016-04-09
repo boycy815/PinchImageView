@@ -16,7 +16,7 @@ public abstract class ImageRegionLoader {
     abstract public void recycle();
 
     public interface RegionLoadCallback {
-        void onInit();
+        void onInited();
         void onRegionLoad(int id, int sampleSize, Rect sampleRect, Bitmap bitmap);
     }
 
@@ -24,6 +24,12 @@ public abstract class ImageRegionLoader {
 
     public void setRegionLoadCallback(RegionLoadCallback callback) {
         mRegionLoadCallback = callback;
+    }
+
+    protected void dispatchInited() {
+        if (mRegionLoadCallback != null) {
+            mRegionLoadCallback.onInited();
+        }
     }
 
     protected void dispatchRegionLoad(int id, int sampleSize, Rect sampleRect, Bitmap bitmap) {

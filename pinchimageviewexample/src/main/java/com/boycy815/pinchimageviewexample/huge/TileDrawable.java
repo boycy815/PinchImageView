@@ -6,9 +6,11 @@ import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 import com.boycy815.pinchimageview.PinchImageView;
 
@@ -50,11 +52,75 @@ public class TileDrawable extends Drawable {
 
     ////////////////////////////////init////////////////////////////////
 
-    private ImageRegionLoader mImageRegionLoader;
+    public interface InitCallback {
+        void onInit();
+    }
 
-    public TileDrawable(ImageRegionLoader loader) {
-        mImageRegionLoader = loader;
-        mImageRegionLoader.setRegionLoadCallback(mRegionLoadCallback);
+    private ImageRegionLoader mImageRegionLoader;
+    private Point mContainerSize;
+
+    private InitCallback mInitCallback;
+
+    private boolean mIsiniting;
+    private boolean mIsInited;
+    private boolean mIsRecyled;
+
+    public TileDrawable() {
+    }
+
+    public void init(ImageRegionLoader loader, Point containerSize) {
+        if (!mIsiniting && !mIsRecyled) {
+            mIsiniting = true;
+            mImageRegionLoader = loader;
+            mImageRegionLoader.setRegionLoadCallback(mRegionLoadCallback);
+            mContainerSize = containerSize;
+            if (mImageRegionLoader.getWidth() > 0 && mImageRegionLoader.getHeight() > 0) {
+                initBaseLayer();
+            } else {
+                mImageRegionLoader.init();
+            }
+        }
+    }
+
+    public void recycle() {
+        mIsRecyled = true;
+        if (mImageRegionLoader != null) {
+            mImageRegionLoader.recycle();
+            mImageRegionLoader = null;
+        }
+        recycleTiles();
+    }
+
+    private void onImageRegionLoaderInited() {
+        initBaseLayer();
+    }
+
+    private void initBaseLayer() {
+        if (!mIsRecyled) {
+            initTiles(mContainerSize);
+            requestBaseLayer();
+        }
+    }
+
+    private void onBaseLayerInited() {
+        if (!mIsRecyled && !mIsInited) {
+            mIsInited = true;
+            dispatchInitEvent();
+        }
+    }
+
+    public boolean isInited() {
+        return mIsInited;
+    }
+
+    public void setInitCallback(InitCallback callback) {
+        mInitCallback = callback;
+    }
+
+    private void dispatchInitEvent() {
+        if (mInitCallback != null) {
+            mInitCallback.onInit();
+        }
     }
 
     ////////////////////////////////tiles////////////////////////////////
@@ -84,57 +150,70 @@ public class TileDrawable extends Drawable {
         @Override
         public void onRegionLoad(int id, int sampleSize, Rect sampleRect, Bitmap bitmap) {
             if (mTiles != null) {
-
-                System.out.println("asdasdasasda:onRegionLoad:id:" + id + ":sampleSize:" + sampleSize + ":sampleRect:" + sampleRect.left + " " + sampleRect.top + " " + sampleRect.right + " " + sampleRect.bottom);
-
                 int i = log2(sampleSize);
                 if (mTiles[i][id].mStatus == Tile.STATUS_LOADING) {
                     mTiles[i][id].mBitmap = bitmap;
                     mTiles[i][id].mStatus = Tile.STATUS_LOADED;
+                    if (i == mTiles.length - 1) {
+                        onBaseLayerInited();
+                    }
                 }
-
                 invalidateSelf();
             }
         }
+
+        @Override
+        public void onInited() {
+            onImageRegionLoaderInited();
+        }
     };
 
-    private void tryInitTiles(PinchImageView pinchImageView) {
+    private void initTiles(Point container) {
         if (mTiles == null) {
-            if (pinchImageView.getWidth() > 0 && pinchImageView.getHeight() > 0) {
-                Matrix matrix = pinchImageView.getInnerMatrix(null);
-                float scale = PinchImageView.MathUtils.getMatrixScale(matrix)[0];
-                int fullSample = findFitSampleSize(scale);
-                int layers = log2(fullSample) + 1;
-                int iWidth = getIntrinsicWidth();
-                int iHeight = getIntrinsicHeight();
-                int sWidth = pinchImageView.getWidth();
-                int sHeight = pinchImageView.getHeight();
-                mTiles = new Tile[layers][];
-                mTiles[layers - 1] = new Tile[]{new Tile(fullSample, new Rect(0, 0, iWidth, iHeight))};
-                for (int i = 0; i < layers - 1; i++) {
-                    int sample = 1 << i;
-                    int widthAfterSample = Math.round((float) iWidth / (float) sample);
-                    int heightAfterSample = Math.round((float) iHeight / (float) sample);
-                    int[] widthFragments = cutFragments(widthAfterSample, sWidth);
-                    int[] heightFragments = cutFragments(heightAfterSample, sHeight);
-                    Tile[] subTiles = new Tile[widthFragments.length * heightFragments.length];
-                    for (int h = 0; h < heightFragments.length; h++) {
-                        for (int w = 0; w < widthFragments.length; w++) {
-                            int left = 0;
-                            if (w != 0) {
-                                left = widthFragments[w - 1];
-                            }
-                            int top = 0;
-                            if (h != 0) {
-                                top = heightFragments[h - 1];
-                            }
-                            int right = widthFragments[w];
-                            int bottom = heightFragments[h];
-                            subTiles[h * widthFragments.length + w] = new Tile(sample, new Rect(left, top, right, bottom));
+            int iWidth = getIntrinsicWidth();
+            int iHeight = getIntrinsicHeight();
+            int sWidth = container.x;
+            int sHeight = container.y;
+            RectF scaledRect = new RectF();
+            PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, sWidth, sHeight), iWidth, iHeight, ImageView.ScaleType.FIT_CENTER, scaledRect);
+            float scale = scaledRect.width() / (float) iWidth;
+            int fullSample = findFitSampleSize(scale);
+            int layers = log2(fullSample) + 1;
+            mTiles = new Tile[layers][];
+            mTiles[layers - 1] = new Tile[]{new Tile(fullSample, new Rect(0, 0, iWidth, iHeight))};
+            for (int i = 0; i < layers - 1; i++) {
+                int sample = 1 << i;
+                int widthAfterSample = Math.round((float) iWidth / (float) sample);
+                int heightAfterSample = Math.round((float) iHeight / (float) sample);
+                int[] widthFragments = cutFragments(widthAfterSample, sWidth);
+                int[] heightFragments = cutFragments(heightAfterSample, sHeight);
+                Tile[] subTiles = new Tile[widthFragments.length * heightFragments.length];
+                for (int h = 0; h < heightFragments.length; h++) {
+                    for (int w = 0; w < widthFragments.length; w++) {
+                        int left = 0;
+                        if (w != 0) {
+                            left = widthFragments[w - 1];
                         }
+                        int top = 0;
+                        if (h != 0) {
+                            top = heightFragments[h - 1];
+                        }
+                        int right = widthFragments[w];
+                        int bottom = heightFragments[h];
+                        subTiles[h * widthFragments.length + w] = new Tile(sample, new Rect(left, top, right, bottom));
                     }
-                    mTiles[i] = subTiles;
                 }
+                mTiles[i] = subTiles;
+            }
+        }
+    }
+
+    private void requestBaseLayer() {
+        if (mTiles != null) {
+            Tile baseLayer = mTiles[mTiles.length - 1][0];
+            if (baseLayer.mStatus == Tile.STATUS_RELEASED) {
+                baseLayer.mStatus = Tile.STATUS_LOADING;
+                mImageRegionLoader.loadRegion(0, baseLayer.mSampleSize, baseLayer.mSampleRect);
             }
         }
     }
@@ -148,11 +227,6 @@ public class TileDrawable extends Drawable {
             int sampleIndex = log2(sample);
             if (sampleIndex > mTiles.length - 1) {
                 sampleIndex = mTiles.length - 1;
-            }
-            Tile baseLayer = mTiles[mTiles.length - 1][0];
-            if (baseLayer.mStatus == Tile.STATUS_RELEASED) {
-                baseLayer.mStatus = Tile.STATUS_LOADING;
-                mImageRegionLoader.loadRegion(0, baseLayer.mSampleSize, baseLayer.mSampleRect);
             }
             for (int i = 0; i < mTiles.length - 1; i++) {
                 Tile[] layer = mTiles[i];
@@ -169,7 +243,7 @@ public class TileDrawable extends Drawable {
                         } else {
                             if (tile.mStatus != Tile.STATUS_RELEASED) {
                                 tile.mStatus = Tile.STATUS_RELEASED;
-                                mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect, tile.mBitmap);
+                                mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect);
                             }
                         }
                     }
@@ -178,7 +252,7 @@ public class TileDrawable extends Drawable {
                         Tile tile = layer[j];
                         if (tile.mStatus != Tile.STATUS_RELEASED) {
                             tile.mStatus = Tile.STATUS_RELEASED;
-                            mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect, tile.mBitmap);
+                            mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect);
                         }
                     }
                 }
@@ -200,6 +274,10 @@ public class TileDrawable extends Drawable {
         }
     }
 
+    private void recycleTiles() {
+        mTiles = null;
+    }
+
     ////////////////////////////////draw////////////////////////////////
 
     private Paint mBitmapPaint;
@@ -210,7 +288,6 @@ public class TileDrawable extends Drawable {
             Rect bounds = getBounds();
             canvas.save();
             canvas.clipRect(bounds);
-            tryInitTiles((PinchImageView) getCallback());
             requestCurrentTiles((PinchImageView) getCallback());
             if (mBitmapPaint == null) {
                 mBitmapPaint = new Paint();
