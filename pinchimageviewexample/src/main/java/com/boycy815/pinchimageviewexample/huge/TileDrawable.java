@@ -236,6 +236,7 @@ public class TileDrawable extends Drawable {
     });
 
     private void requestCurrentTilesDelay(long delay) {
+        mRequestCurrentTilesDelayHandler.removeMessages(0);
         mRequestCurrentTilesDelayHandler.sendEmptyMessageDelayed(0, delay);
     }
 
@@ -308,7 +309,7 @@ public class TileDrawable extends Drawable {
         Rect bounds = getBounds();
         canvas.save();
         canvas.clipRect(bounds);
-        requestCurrentTilesDelay(200);
+        requestCurrentTilesDelay(50);
         if (mBitmapPaint == null) {
             mBitmapPaint = new Paint();
             mBitmapPaint.setAntiAlias(true);
