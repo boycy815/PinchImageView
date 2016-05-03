@@ -266,6 +266,7 @@ public class TileDrawable extends Drawable {
                             if (tile.mStatus != Tile.STATUS_RELEASED) {
                                 tile.mStatus = Tile.STATUS_RELEASED;
                                 mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect);
+                                invalidateSelf();
                             }
                         }
                     }
@@ -275,6 +276,7 @@ public class TileDrawable extends Drawable {
                         if (tile.mStatus != Tile.STATUS_RELEASED) {
                             tile.mStatus = Tile.STATUS_RELEASED;
                             mImageRegionLoader.recycleRegion(j, tile.mSampleSize, tile.mSampleRect);
+                            invalidateSelf();
                         }
                     }
                 }
