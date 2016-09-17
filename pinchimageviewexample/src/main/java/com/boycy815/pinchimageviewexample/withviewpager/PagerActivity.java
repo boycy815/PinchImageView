@@ -3,6 +3,7 @@ package com.boycy815.pinchimageviewexample.withviewpager;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -13,7 +14,6 @@ import com.boycy815.pinchimageviewexample.images.ImageSource;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 import java.util.LinkedList;
-
 
 public class PagerActivity extends Activity {
 
@@ -26,7 +26,7 @@ public class PagerActivity extends Activity {
         final DisplayImageOptions thumbOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
         final DisplayImageOptions originOptions = new DisplayImageOptions.Builder().build();
 
-        final PinchImageViewPager pager = (PinchImageViewPager) findViewById(R.id.pager);
+        final ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {
@@ -65,7 +65,6 @@ public class PagerActivity extends Activity {
                 PinchImageView piv = (PinchImageView) object;
                 ImageSource image = Global.getTestImage(position);
                 Global.getImageLoader(getApplicationContext()).displayImage(image.getUrl(image.getOriginWidth(), image.getOriginHeight()), piv, originOptions);
-                pager.setMainPinchImageView(piv);
             }
         });
     }
