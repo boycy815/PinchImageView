@@ -243,6 +243,54 @@ public class PinchImageView extends ImageView  {
         return mPinchMode;
     }
 
+    /**
+     * 与ViewPager结合的时候使用
+     * @param direction
+     * @return
+     */
+    @Override
+    public boolean canScrollHorizontally(int direction) {
+        if (mPinchMode == PinchImageView.PINCH_MODE_SCALE) {
+            return true;
+        }
+        RectF bound = getImageBound(null);
+        if (bound == null) {
+            return false;
+        }
+        if (bound.isEmpty()) {
+            return false;
+        }
+        if (direction > 0) {
+            return bound.right > getWidth();
+        } else {
+            return bound.left < 0;
+        }
+    }
+
+    /**
+     * 与ViewPager结合的时候使用
+     * @param direction
+     * @return
+     */
+    @Override
+    public boolean canScrollVertically(int direction) {
+        if (mPinchMode == PinchImageView.PINCH_MODE_SCALE) {
+            return true;
+        }
+        RectF bound = getImageBound(null);
+        if (bound == null) {
+            return false;
+        }
+        if (bound.isEmpty()) {
+            return false;
+        }
+        if (direction > 0) {
+            return bound.bottom > getHeight();
+        } else {
+            return bound.top < 0;
+        }
+    }
+
 
     ////////////////////////////////公共状态设置////////////////////////////////
 
@@ -1696,19 +1744,6 @@ public class PinchImageView extends ImageView  {
             } else {
                 result.set(container);
             }
-        }
-    }
-
-    @Override
-    public boolean canScrollHorizontally(int direction) {
-        if (mPinchMode == PinchImageView.PINCH_MODE_SCALE) {
-            return true;
-        }
-        RectF bound = getImageBound(null);
-        if (direction > 0) {
-            return bound.right > getWidth();
-        } else {
-            return bound.left < 0;
         }
     }
 }
