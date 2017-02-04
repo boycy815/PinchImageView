@@ -2,19 +2,13 @@ package com.boycy815.pinchimageviewexample;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.boycy815.pinchimageviewexample.huge.HugeActivity;
 import com.boycy815.pinchimageviewexample.withviewpager.PagerActivity;
 import com.boycy815.pinchimageviewexample.zoomtransition.ThumbViewActivity;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 
 public class IndexActivity extends Activity {

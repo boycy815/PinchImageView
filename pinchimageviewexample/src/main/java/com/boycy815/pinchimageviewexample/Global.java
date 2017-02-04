@@ -1,15 +1,11 @@
 package com.boycy815.pinchimageviewexample;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 
 import com.boycy815.pinchimageviewexample.images.FengNiaoImageSource;
 import com.boycy815.pinchimageviewexample.images.ImageSource;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by clifford on 16/3/8.
@@ -17,26 +13,26 @@ import java.util.Map;
 public class Global {
 
     private static ImageSource[] sTestImages = new ImageSource[] {
-             new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT34yIS3XIAAGvCCMjfnoAAP8ZwHTjjoAAa8g566.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35eIC6AWAAN9cEMMMQsAAP8ZwLLBvoAA32I562.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT34qIJMntAAHM2HI3G_wAAP8ZwHDMOUAAczw239.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35KIDWtMAAHgwQp3DEEAAP8ZwJv_ZUAAeDZ609.jpg", 950, 633)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35KIb_Q_AAEunpNOlukAAP8ZwJ-m4wAAS62276.jpg", 427, 640)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT346IQ-KxAAYmpx0z07EAAP8ZwI0C20ABia_647.jpg", 919, 613)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT34-IO-EeAAJpdd7b8uoAAP8ZwJE-SgAAmmN623.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35SIIc8yAAU0VnR12yIAAP8ZwKQlhoABTRu859.jpg", 920, 613)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35SILHlOAAKqd9iBUTAAAP8ZwKgNhYAAqqP126.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35SIeSLUAAPax0D_3bMAAP8ZwKnGl0AA9rf268.jpg", 920, 613)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35iIfug3AAg6bEu4SKEAAP8ZwLXTH4ACDqE284.jpg", 489, 734)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35CIPbr-AALALZZpIMoAAP8ZwJWhgEAAsBF567.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35WIBE24AAWPmzfoYl0AAP8ZwKxqkIABY-z251.jpg", 919, 625)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35aIccnmAAFR2yc86jYAAP8ZwK5VgsAAVHz519.jpg", 950, 577)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT35aIdxleAAKaEqcSgaIAAP8ZwK9yVwAApoq028.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35iILh8vAAXn5BT-E38AAP8ZwLRTKgABef8184.jpg", 489, 734)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35KIfBVQAADoduSDMGAAAP8ZwJr4_cAAOiO276.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT35GIdVLgAANThREJFDsAAP8ZwJky6MAA1Od301.jpg", 950, 634)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4rFbT342ILO1kAAIkYOJUyRgAAP8ZwHnWHsAAiR4224.jpg", 950, 687)
-            ,new FengNiaoImageSource("/g1/M00/06/51/Cg-4q1bT34-IBtFHAAJVg76zRMgAAP8ZwJCeycAAlWb315.jpg", 950, 634)
+             new FengNiaoImageSource("http://img2.fengniao.com/product/157/723/ceHjSq9Gi7rw.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/723/ceHjSq9Gi7rw.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/725/ceuhOIF9Nu3gw.jpg", 823, 1200, "http://img2.fengniao.com/product/157_120x80/725/ceuhOIF9Nu3gw.jpg", 55, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/726/ce6fdSSnNDcE.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/726/ce6fdSSnNDcE.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/728/ce5OWBfCvdUsg.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/728/ce5OWBfCvdUsg.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/729/cet3Qy71akHxw.jpg", 920, 613, "http://img2.fengniao.com/product/157_120x80/729/cet3Qy71akHxw.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/731/ceQ1a6veUt14c.jpg", 920, 613, "http://img2.fengniao.com/product/157_120x80/731/ceQ1a6veUt14c.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/733/cenGy9PXZGD2c.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/733/cenGy9PXZGD2c.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/735/ceJFal9LhuDcM.jpg", 920, 613, "http://img2.fengniao.com/product/157_120x80/735/ceJFal9LhuDcM.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/738/cev3KNFe3yEzc.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/738/cev3KNFe3yEzc.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/741/cenKQCdeiDR.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/741/cenKQCdeiDR.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/157/743/ceh3VUyMh2mrM.jpg", 800, 1200, "http://img2.fengniao.com/product/157_120x80/743/ceh3VUyMh2mrM.jpg", 53, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/687/ceBxNNZKz9FM.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/687/ceBxNNZKz9FM.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/701/ce8auRkGHKvZU.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/701/ce8auRkGHKvZU.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/702/ceHN1fr8pNK7Q.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/702/ceHN1fr8pNK7Q.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/703/ce3yD1kV5DD3U.jpg", 1000, 758, "http://img2.fengniao.com/product/156_120x80/703/ce3yD1kV5DD3U.jpg", 106, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/704/cecPlsMVQjdXg.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/704/cecPlsMVQjdXg.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/705/cerq31ixNQhNk.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/705/cerq31ixNQhNk.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/706/ce5CGTyLbenxU.jpg", 1000, 668, "http://img2.fengniao.com/product/156_120x80/706/ce5CGTyLbenxU.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/707/ceaaE3uUMnl8k.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/707/ceaaE3uUMnl8k.jpg", 120, 80)
+            ,new FengNiaoImageSource("http://img2.fengniao.com/product/156/699/ceLQ6w6UxHcIw.jpg", 1000, 667, "http://img2.fengniao.com/product/156_120x80/699/ceLQ6w6UxHcIw.jpg", 120, 80)
     };
 
     public static ImageSource getTestImage(int i) {
