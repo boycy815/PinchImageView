@@ -56,7 +56,7 @@ public class PicViewActivity extends Activity {
         if (bitmap != null && !bitmap.isRecycled()) {
             mImageView.setImageBitmap(bitmap);
         }
-        imageLoader.displayImage(image.getOrigin().url, mImageView, originOptions);
+        imageLoader.displayImage(image.getThumb(1000, 1000).url, mImageView, originOptions);
 
         mImageView.post(new Runnable() {
             @Override

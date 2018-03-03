@@ -1,5 +1,10 @@
 package com.boycy815.pinchimageviewexample.images;
 
+import android.graphics.RectF;
+import android.widget.ImageView;
+
+import com.boycy815.pinchimageview.PinchImageView;
+
 /**
  * 蜂鸟网的图片素材
  *
@@ -12,25 +17,21 @@ public class FengNiaoImageSource implements ImageSource {
     private String mOriginUrl;
     private int mOriginWidth;
     private int mOriginHeight;
-    private String mThumbUrl;
-    private int mThumbWidth;
-    private int mThumbHeight;
 
-    public FengNiaoImageSource(String originUrl, int originWidth, int originHeight, String thumbUrl, int thumbWidth, int thumbHeight) {
+    public FengNiaoImageSource(String originUrl, int originWidth, int originHeight) {
         mOriginUrl = originUrl;
         mOriginWidth = originWidth;
         mOriginHeight = originHeight;
-        mThumbUrl = thumbUrl;
-        mThumbWidth = thumbWidth;
-        mThumbHeight = thumbHeight;
     }
 
     @Override
     public ImageObject getThumb(int width, int height) {
         ImageObject imageObject = new ImageObject();
-        imageObject.url = mThumbUrl;
-        imageObject.width = mThumbWidth;
-        imageObject.height = mThumbHeight;
+        imageObject.url = mOriginUrl + "?imageView2/2/w/" + width + "/h/" + height;
+        RectF result = new RectF();
+        PinchImageView.MathUtils.calculateScaledRectInContainer(new RectF(0, 0, width, height), mOriginWidth, mOriginHeight, ImageView.ScaleType.FIT_CENTER, result);
+        imageObject.width = (int) result.width();
+        imageObject.height = (int) result.height();
         return imageObject;
     }
 
