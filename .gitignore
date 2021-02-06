@@ -1,9 +1,6 @@
 .DS_Store
 /build
-/gradle
 /local.properties
 /.idea
 /.gradle
 /*.iml
-/gradlew
-/gradlew.bat
