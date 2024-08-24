@@ -9,49 +9,55 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitCenter"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitCenter" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitCenter"/>
+            android:text="scaleType:fitCenter" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="center"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="center" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:center"/>
+            android:text="scaleType:center" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="centerCrop"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="centerCrop" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:centerCrop"/>
+            android:text="scaleType:centerCrop" />
     </LinearLayout>
 
     <LinearLayout
@@ -60,15 +66,17 @@
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="centerInside"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="centerInside" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:centerInside"/>
+            android:text="scaleType:centerInside" />
     </LinearLayout>
 
     <LinearLayout
@@ -77,15 +85,17 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitEnd"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitEnd" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitEnd"/>
+            android:text="scaleType:fitEnd" />
     </LinearLayout>
 
     <LinearLayout
@@ -94,15 +104,17 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitStart"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitStart" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitStart"/>
+            android:text="scaleType:fitStart" />
     </LinearLayout>
 
     <LinearLayout
@@ -111,32 +123,36 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitXY"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitXY" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitXY"/>
+            android:text="scaleType:fitXY" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitXY"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitXY" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitXY"/>
+            android:text="scaleType:fitXY" />
     </LinearLayout>
 
     <LinearLayout
@@ -145,15 +161,17 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
+
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="fitXY"
-            android:background="#000000"/>
+            android:background="#000000"
+            android:scaleType="fitXY" />
+
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="scaleType:fitXY"/>
+            android:text="scaleType:fitXY" />
     </LinearLayout>
 
 </RelativeLayout>

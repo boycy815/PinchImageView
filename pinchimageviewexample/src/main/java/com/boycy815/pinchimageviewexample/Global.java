@@ -2,8 +2,9 @@ package com.boycy815.pinchimageviewexample;
 
 import android.content.Context;
 
-import com.boycy815.pinchimageviewexample.images.FengNiaoImageSource;
+import com.boycy815.pinchimageviewexample.images.ImageObject;
 import com.boycy815.pinchimageviewexample.images.ImageSource;
+import com.boycy815.pinchimageviewexample.images.ImageSourceImpl;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -12,21 +13,19 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
  */
 public class Global {
 
-    private static ImageSource[] sTestImages = new ImageSource[] {
-             new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/a3d12f4355dde74483e323022866c27c.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/821ee769c9965094bd2d4d3567253eb4.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/a6c04be8a7c070f90707ee346180e664.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/18925552b84b6462f041fdac7533111b.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/dfd2eb58639be0c55be4802b99b50fb6.jpg", 3840, 5760)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/70ef420ace8179b68523701d784e772c.jpg", 3840, 5760)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/82acb0052d63633324da3aa2eddf9610.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/f37e7606bc900a7b0a4dbf42f82d8147.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/f48fc28caecc588fadf5ab71d5a3215c.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/fcaaa048799d44f48ce015d11ba6e565.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/110401232c7f779e647251b7445a0635.jpg", 5760, 3840)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/2263e35507b57b5c1ddcd989d45c05b7.jpg", 3840, 5760)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/ac5ce73f98a43c7c9263974a93c1c39b.jpg", 3840, 5760)
-            ,new FengNiaoImageSource("https://bbs.qn.img-space.com/201803/1/c2776f84eef6f0350666b1b37d87d9d3.jpg", 5760, 3840)
+    private static final ImageSource[] sTestImages = new ImageSource[]{
+            new ImageSourceImpl(
+                    new ImageObject("https://gw.alicdn.com/imgextra/i2/2211014865515/O1CN01CovDNr1qbvFbWPB4D_!!0-item_pic.jpg_240x10000Q75.jpg", 240, 320)
+                    , new ImageObject("https://gw.alicdn.com/imgextra/i2/2211014865515/O1CN01CovDNr1qbvFbWPB4D_!!0-item_pic.jpg", 1200, 1600)
+            )
+            , new ImageSourceImpl(
+                    new ImageObject("https://gw.alicdn.com/imgextra/i2/2211014865515/O1CN01OEkTUc1qbvFd4FSBy_!!2211014865515.jpg_240x10000Q75.jpg", 240, 320)
+                    , new ImageObject("https://gw.alicdn.com/imgextra/i2/2211014865515/O1CN01OEkTUc1qbvFd4FSBy_!!2211014865515.jpg", 1200, 1600)
+            )
+            , new ImageSourceImpl(
+                    new ImageObject("https://gw.alicdn.com/imgextra/i1/2211014865515/O1CN01oOpn301qbvFgAhTMa_!!2211014865515.jpg_240x10000Q75.jpg", 240, 320)
+                    , new ImageObject("https://gw.alicdn.com/imgextra/i1/2211014865515/O1CN01oOpn301qbvFgAhTMa_!!2211014865515.jpg", 1200, 1600)
+            )
     };
 
     public static ImageSource getTestImage(int i) {

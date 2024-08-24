@@ -39,11 +39,11 @@ public class PicViewActivity extends Activity {
 
         //获取参数
         ImageSource image = (ImageSource) getIntent().getSerializableExtra("image");
-        String memoryCacheKey =  getIntent().getStringExtra("cache_key");
+        String memoryCacheKey = getIntent().getStringExtra("cache_key");
         final Rect rect = getIntent().getParcelableExtra("rect");
         final ImageView.ScaleType scaleType = (ImageView.ScaleType) getIntent().getSerializableExtra("scaleType");
 
-        final ImageObject thumb = image.getThumb(100, 100);
+        final ImageObject thumb = image.getThumb();
 
         ImageLoader imageLoader = Global.getImageLoader(getApplicationContext());
         DisplayImageOptions originOptions = new DisplayImageOptions.Builder().build();
@@ -56,7 +56,7 @@ public class PicViewActivity extends Activity {
         if (bitmap != null && !bitmap.isRecycled()) {
             mImageView.setImageBitmap(bitmap);
         }
-        imageLoader.displayImage(image.getThumb(1000, 1000).url, mImageView, originOptions);
+        imageLoader.displayImage(image.getOrigin().url, mImageView, originOptions);
 
         mImageView.post(new Runnable() {
             @Override

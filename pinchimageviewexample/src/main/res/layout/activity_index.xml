@@ -1,30 +1,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <Button
             android:id="@+id/btn_pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="和ViewPager结合"/>
+            android:text="和ViewPager结合" />
+
         <Button
             android:id="@+id/btn_zoom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="点击放大动画"/>
+            android:text="点击放大动画" />
+
         <Button
             android:id="@+id/btn_huge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="超大图浏览"/>
+            android:text="超大图浏览" />
     </LinearLayout>
+
     <Button
         android:id="@+id/view_github"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="view in Github"/>
+        android:text="view in Github" />
 </RelativeLayout>

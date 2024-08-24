@@ -29,16 +29,20 @@ public class TileDrawable extends Drawable {
     }
 
     @Override
-    public void setFilterBitmap(boolean filter) {}
+    public void setFilterBitmap(boolean filter) {
+    }
 
     @Override
-    public void setDither(boolean dither) {}
+    public void setDither(boolean dither) {
+    }
 
     @Override
-    public void setColorFilter(ColorFilter colorFilter) {}
+    public void setColorFilter(ColorFilter colorFilter) {
+    }
 
     @Override
-    public void setAlpha(int alpha) {}
+    public void setAlpha(int alpha) {
+    }
 
     ////////////////////////////////size////////////////////////////////
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
@@ -7,28 +8,17 @@
         android:label="@string/app_name">
         <activity
             android:name=".IndexActivity"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".withviewpager.PagerActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name=".zoomtransition.ThumbViewActivity"
-            android:label="@string/app_name">
-        </activity>
+        <activity android:name=".withviewpager.PagerActivity" />
+        <activity android:name=".zoomtransition.ThumbViewActivity" />
         <activity
             android:name=".zoomtransition.PicViewActivity"
-            android:label="@string/app_name"
-            android:theme="@style/pic_view">
-        </activity>
-        <activity
-            android:name=".huge.HugeActivity"
-            android:label="@string/app_name">
-        </activity>
+            android:theme="@style/pic_view" />
+        <activity android:name=".huge.HugeActivity" />
     </application>
 </manifest>

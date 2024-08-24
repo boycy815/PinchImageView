@@ -9,14 +9,20 @@ import android.graphics.Rect;
 public abstract class ImageRegionLoader {
 
     abstract public void init();
+
     abstract public int getWidth();
+
     abstract public int getHeight();
+
     abstract public void loadRegion(int id, int sampleSize, Rect sampleRect);
+
     abstract public void recycleRegion(int id, int sampleSize, Rect sampleRect);
+
     abstract public void recycle();
 
     public interface RegionLoadCallback {
         void onInited();
+
         void onRegionLoad(int id, int sampleSize, Rect sampleRect, Bitmap bitmap);
     }
 

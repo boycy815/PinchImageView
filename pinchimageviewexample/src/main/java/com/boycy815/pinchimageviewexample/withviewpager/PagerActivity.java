@@ -49,7 +49,7 @@ public class PagerActivity extends Activity {
                     piv = new PinchImageView(PagerActivity.this);
                 }
                 ImageSource image = Global.getTestImage(position);
-                Global.getImageLoader(getApplicationContext()).displayImage(image.getThumb(100, 100).url, piv, thumbOptions);
+                Global.getImageLoader(getApplicationContext()).displayImage(image.getThumb().url, piv, thumbOptions);
                 container.addView(piv);
                 return piv;
             }
@@ -65,7 +65,7 @@ public class PagerActivity extends Activity {
             public void setPrimaryItem(ViewGroup container, int position, Object object) {
                 PinchImageView piv = (PinchImageView) object;
                 ImageSource image = Global.getTestImage(position);
-                Global.getImageLoader(getApplicationContext()).displayImage(image.getThumb(1000, 1000).url, piv, originOptions);
+                Global.getImageLoader(getApplicationContext()).displayImage(image.getOrigin().url, piv, originOptions);
             }
         });
     }

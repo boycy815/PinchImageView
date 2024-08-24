@@ -10,13 +10,9 @@ import java.io.Serializable;
 public interface ImageSource extends Serializable {
 
     /**
-     * 根据希望的宽高获取缩略图
-     *
-     * @param width 希望的宽
-     * @param height 希望的高
-     * @return 图片缩略图对象
+     * 获取缩略图
      */
-    ImageObject getThumb(int width, int height);
+    ImageObject getThumb();
 
     /**
      * 获取原图

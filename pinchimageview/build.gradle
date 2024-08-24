@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 25
-
+    namespace 'com.boycy815.pinchimageview'
+    compileSdk 34
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 25
+        targetSdkVersion 33
     }
     buildTypes {
         release {
@@ -13,7 +13,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.boycy815.pinchimageview'
 }
 
 dependencies {

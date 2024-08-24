@@ -149,7 +149,7 @@ public class HugeImageRegionLoader extends ImageRegionLoader {
 
     @Override
     public void loadRegion(int id, int sampleSize, Rect sampleRect) {
-        if(mDecoder != null) {
+        if (mDecoder != null) {
             String key = genKey(id, sampleSize);
             if (mRecycleCommands.containsKey(key)) {
                 mRecycleCommands.remove(key);

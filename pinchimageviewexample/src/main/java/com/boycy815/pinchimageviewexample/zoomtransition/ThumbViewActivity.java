@@ -34,7 +34,7 @@ public class ThumbViewActivity extends Activity {
             final int fi = i;
             final ImageView thumb = (ImageView) ((ViewGroup) root.getChildAt(i)).getChildAt(0);
             final ImageViewAware thumbAware = new ImageViewAware(thumb);
-            final String url = Global.getTestImage(i).getThumb(100, 100).url;
+            final String url = Global.getTestImage(i).getThumb().url;
             imageLoader.displayImage(url, thumbAware, thumbOptions);
             thumb.setOnClickListener(new View.OnClickListener() {
                 @Override
