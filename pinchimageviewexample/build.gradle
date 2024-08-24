@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
 
     defaultConfig {
         applicationId "com.boycy815.pinchimageviewexample"
@@ -22,10 +21,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.boycy815.pinchimageviewexample'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:24.2.1'
-    compile project(':pinchimageview')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:support-v4:24.2.1'
+    implementation project(':pinchimageview')
 }

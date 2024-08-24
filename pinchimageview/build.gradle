@@ -2,13 +2,10 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
     }
     buildTypes {
         release {
@@ -16,8 +13,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.boycy815.pinchimageview'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    api fileTree(dir: 'libs', include: ['*.jar'])
 }
