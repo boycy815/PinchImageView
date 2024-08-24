@@ -1,6 +1,6 @@
 # PinchImageView
 
-这是一个手势体验极棒但使用简单的ImageView控件，实现了手势放大缩小，平移等功能。PinchImageView继承于ImageView，可以在所有ImageView可以使用的情况下使用。全部的程序仅一个类文件，没有依赖任何特殊的外部库，非常易于集成。
+这是一个手势体验极佳且使用简单的ImageView控件，实现了手势放大缩小，平移等功能。PinchImageView继承自ImageView，仅一个类文件，无依赖任何外部库，非常易于集成。
 
 QQ交流群：1011201647
 
@@ -71,7 +71,7 @@ APK下载：**[demo.apk](demo/demo.apk)**
 **2)** 接下来你可以直接把它作为ImageView取出来使用：
 
     //作为ImageView取出来
-    ImageView imageView = (ImageView)findViewById(R.id.pic);
+    ImageView imageView = (ImageView) findViewById(R.id.pic);
     //可以使用任何ImageView支持的方式设置图片
     imageView.setImageResource(R.drawable.my_pic);
     //or...
