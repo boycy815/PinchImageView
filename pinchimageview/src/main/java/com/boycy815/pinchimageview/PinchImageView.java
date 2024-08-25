@@ -201,9 +201,7 @@ public class PinchImageView extends ImageView {
         } else {
             rectF.setEmpty();
         }
-        if (!isReady()) {
-            return rectF;
-        } else {
+        if (isReady()) {
             //申请一个空matrix
             Matrix matrix = MathUtils.matrixTake();
             //获取当前总变换矩阵
@@ -213,8 +211,8 @@ public class PinchImageView extends ImageView {
             matrix.mapRect(rectF);
             //释放临时matrix
             MathUtils.matrixGiven(matrix);
-            return rectF;
         }
+        return rectF;
     }
 
     /**
@@ -243,9 +241,6 @@ public class PinchImageView extends ImageView {
 
     /**
      * 与ViewPager结合的时候使用
-     *
-     * @param direction
-     * @return
      */
     @Override
     public boolean canScrollHorizontally(int direction) {
@@ -268,9 +263,6 @@ public class PinchImageView extends ImageView {
 
     /**
      * 与ViewPager结合的时候使用
-     *
-     * @param direction
-     * @return
      */
     @Override
     public boolean canScrollVertically(int direction) {
@@ -399,7 +391,6 @@ public class PinchImageView extends ImageView {
          * 外部矩阵的任何变化后都收到此回调.
          * 外部矩阵变化后,总变化矩阵,图片的展示位置都将发生变化.
          *
-         * @param pinchImageView
          * @see #getOuterMatrix(Matrix)
          * @see #getCurrentImageMatrix(Matrix)
          * @see #getImageBound(RectF)
@@ -435,8 +426,6 @@ public class PinchImageView extends ImageView {
 
     /**
      * 添加外部矩阵变化监听
-     *
-     * @param listener
      */
     public void addOuterMatrixChangedListener(OuterMatrixChangedListener listener) {
         if (listener == null) {
@@ -464,8 +453,6 @@ public class PinchImageView extends ImageView {
 
     /**
      * 删除外部矩阵变化监听
-     *
-     * @param listener
      */
     public void removeOuterMatrixChangedListener(OuterMatrixChangedListener listener) {
         if (listener == null) {
@@ -556,8 +543,9 @@ public class PinchImageView extends ImageView {
      */
     protected float calculateNextScale(float innerScale, float outerScale) {
         float currentScale = innerScale * outerScale;
-        if (currentScale < MAX_SCALE) {
-            return MAX_SCALE;
+        float maxScale = getMaxScale();
+        if (currentScale < maxScale) {
+            return maxScale;
         } else {
             return innerScale;
         }
@@ -649,17 +637,17 @@ public class PinchImageView extends ImageView {
         /**
          * 开始mask
          */
-        private float[] mStart = new float[4];
+        private final float[] mStart = new float[4];
 
         /**
          * 结束mask
          */
-        private float[] mEnd = new float[4];
+        private final float[] mEnd = new float[4];
 
         /**
          * 中间结果mask
          */
-        private float[] mResult = new float[4];
+        private final float[] mResult = new float[4];
 
         /**
          * 创建mask变换动画
@@ -717,7 +705,7 @@ public class PinchImageView extends ImageView {
      * @see #scale(PointF, float, float, PointF)
      * @see #scaleEnd()
      */
-    private PointF mLastMovePoint = new PointF();
+    private final PointF mLastMovePoint = new PointF();
 
     /**
      * 缩放模式下图片的缩放中点.
@@ -730,7 +718,7 @@ public class PinchImageView extends ImageView {
      * @see #mLastMovePoint
      * @see #scale(PointF, float, float, PointF)
      */
-    private PointF mScaleCenter = new PointF();
+    private final PointF mScaleCenter = new PointF();
 
     /**
      * 缩放模式下的基础缩放比例
@@ -768,7 +756,7 @@ public class PinchImageView extends ImageView {
      * <p>
      * 在onTouchEvent末尾被执行.
      */
-    private GestureDetector mGestureDetector = new GestureDetector(PinchImageView.this.getContext(), new GestureDetector.SimpleOnGestureListener() {
+    private final GestureDetector mGestureDetector = new GestureDetector(PinchImageView.this.getContext(), new GestureDetector.SimpleOnGestureListener() {
 
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             //只有在单指模式结束之后才允许执行fling
@@ -936,11 +924,7 @@ public class PinchImageView extends ImageView {
         //触发重绘
         invalidate();
         //检查是否有变化
-        if (xDiff != 0 || yDiff != 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return xDiff != 0 || yDiff != 0;
     }
 
     /**
@@ -1210,7 +1194,7 @@ public class PinchImageView extends ImageView {
         /**
          * 速度向量
          */
-        private float[] mVector;
+        private final float[] mVector;
 
         /**
          * 创建惯性动画
@@ -1252,17 +1236,17 @@ public class PinchImageView extends ImageView {
         /**
          * 开始矩阵
          */
-        private float[] mStart = new float[9];
+        private final float[] mStart = new float[9];
 
         /**
          * 结束矩阵
          */
-        private float[] mEnd = new float[9];
+        private final float[] mEnd = new float[9];
 
         /**
          * 中间结果矩阵
          */
-        private float[] mResult = new float[9];
+        private final float[] mResult = new float[9];
 
         /**
          * 构建一个缩放动画
@@ -1326,12 +1310,12 @@ public class PinchImageView extends ImageView {
         /**
          * 对象池的最大容量
          */
-        private int mSize;
+        private final int mSize;
 
         /**
          * 对象池队列
          */
-        private Queue<T> mQueue;
+        private final Queue<T> mQueue;
 
         /**
          * 创建一个对象池
@@ -1356,7 +1340,7 @@ public class PinchImageView extends ImageView {
          */
         public T take() {
             //如果池内为空就创建一个
-            if (mQueue.size() == 0) {
+            if (mQueue.isEmpty()) {
                 return newInstance();
             } else {
                 //对象池里有就从顶端拿出来一个返回
@@ -1450,7 +1434,7 @@ public class PinchImageView extends ImageView {
         /**
          * 矩阵对象池
          */
-        private static MatrixPool mMatrixPool = new MatrixPool(16);
+        private static final MatrixPool mMatrixPool = new MatrixPool(16);
 
         /**
          * 获取矩阵对象
@@ -1480,7 +1464,7 @@ public class PinchImageView extends ImageView {
         /**
          * 矩形对象池
          */
-        private static RectFPool mRectFPool = new RectFPool(16);
+        private static final RectFPool mRectFPool = new RectFPool(16);
 
         /**
          * 获取矩形对象
@@ -1566,8 +1550,6 @@ public class PinchImageView extends ImageView {
          * matrix.mapPoints(unknownPoint) -> point
          * 已知point和matrix,求unknownPoint的值.
          *
-         * @param point
-         * @param matrix
          * @return unknownPoint
          */
         public static float[] inverseMatrixPoint(float[] point, Matrix matrix) {
@@ -1592,8 +1574,6 @@ public class PinchImageView extends ImageView {
          * unknownMatrix.mapRect(to, from)
          * 已知from矩形和to矩形,求unknownMatrix
          *
-         * @param from
-         * @param to
          * @param result unknownMatrix
          */
         public static void calculateRectTranslateMatrix(RectF from, RectF to, Matrix result) {
