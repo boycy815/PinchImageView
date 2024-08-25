@@ -61,11 +61,19 @@ public class PagerActivity extends Activity {
                 viewCache.add(piv);
             }
 
+            private PinchImageView mPrimaryItem;
+
             @Override
             public void setPrimaryItem(ViewGroup container, int position, Object object) {
-                PinchImageView piv = (PinchImageView) object;
+                if (mPrimaryItem == object) {
+                    return;
+                }
+                if (mPrimaryItem != null) {
+                    mPrimaryItem.reset();
+                }
+                mPrimaryItem = (PinchImageView) object;
                 ImageSource image = Global.getTestImage(position);
-                Global.getImageLoader(getApplicationContext()).displayImage(image.getOrigin().url, piv, originOptions);
+                Global.getImageLoader(getApplicationContext()).displayImage(image.getOrigin().url, mPrimaryItem, originOptions);
             }
         });
     }
