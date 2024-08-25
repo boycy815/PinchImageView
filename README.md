@@ -8,8 +8,6 @@ A gesture-friendly and easy-to-use image pinch-zoom control. It extends `ImageVi
 
 ![demo](demo/demo.gif)
 
-APK download: **[demo.apk](demo/demo.apk)**
-
 ### Demo Description
 
 1. Integrated with ViewPlayer, preloads thumbnail images when the image is not on the current page, and switches to high-definition images when the page is in view.

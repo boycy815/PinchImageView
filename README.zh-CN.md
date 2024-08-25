@@ -12,8 +12,6 @@ QQ交流群：1011201647
 
 完整Demo视频：[http://v.youku.com/v_show/id_XMTUyOTA0NzI3Ng==.html](http://v.youku.com/v_show/id_XMTUyOTA0NzI3Ng==.html)
 
-APK下载：**[demo.apk](demo/demo.apk)**
-
 ### Demo说明
 
 1. 与ViewPlayer结合，图片不在当前页时预加载缩略图，切换到当前页后切换成高清图。
