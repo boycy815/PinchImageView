@@ -542,8 +542,9 @@ public class PinchImageView extends ImageView {
      * @see #getMaxScale()
      */
     protected float calculateNextScale(float innerScale, float outerScale) {
-        float currentScale = innerScale * outerScale;
-        float maxScale = getMaxScale();
+        // 使用roundToPrecision解决浮点数精度问题，造成nextScale计算不准
+        float currentScale = MathUtils.roundToPrecision(innerScale * outerScale, 2);
+        float maxScale = MathUtils.roundToPrecision(getMaxScale(), 2);
         if (currentScale < maxScale) {
             return maxScale;
         } else {
@@ -1587,6 +1588,14 @@ public class PinchImageView extends ImageView {
             result.postTranslate(-from.left, -from.top);
             result.postScale(to.width() / from.width(), to.height() / from.height());
             result.postTranslate(to.left, to.top);
+        }
+
+        /**
+         * 浮点数四舍五入到小数点precision位
+         */
+        public static float roundToPrecision(float number, int precision) {
+            float scale = (float) Math.pow(10, precision);
+            return Math.round(number * scale) / scale;
         }
 
         /**
