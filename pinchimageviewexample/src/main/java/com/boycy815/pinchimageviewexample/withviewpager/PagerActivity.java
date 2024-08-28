@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.boycy815.pinchimageview.PinchImageView;
+import com.boycy815.pinchimageviewexample.CustomPinchImageView;
 import com.boycy815.pinchimageviewexample.Global;
 import com.boycy815.pinchimageviewexample.R;
 import com.boycy815.pinchimageviewexample.images.ImageSource;
@@ -46,7 +47,7 @@ public class PagerActivity extends Activity {
                     piv = viewCache.remove();
                     piv.reset();
                 } else {
-                    piv = new PinchImageView(PagerActivity.this);
+                    piv = new CustomPinchImageView(PagerActivity.this);
                 }
                 ImageSource image = Global.getTestImage(position);
                 Global.getImageLoader(getApplicationContext()).displayImage(image.getThumb().url, piv, thumbOptions);
